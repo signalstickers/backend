@@ -1,0 +1,39 @@
+"""
+Modify this file and save it as "prod.py".
+CHANGE ALL VALUES IN THIS FILE.
+"""
+
+
+from .common import *
+
+SECRET_KEY = "FIXME"
+
+DEBUG = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+ALLOWED_HOSTS = []
+
+INTERNAL_IPS = ["127.0.0.1", "localhost"]
+
+
+DATABASES = {
+    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+}
+
+# Disable Browsable API
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
+}
+
+
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+
+ADMINS = []  # FIXME
+
+
+if SECRET_KEY == "FIXME" or DEBUG == True or CORS_ALLOW_ALL_ORIGINS == True:
+    exit("Error: set appropriate prod values in settings/prod.py")
