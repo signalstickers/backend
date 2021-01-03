@@ -44,20 +44,6 @@ class PackAdmin(admin.ModelAdmin):
     search_fields = ("title", "pack_id", "pack_key", "tags__name")
     list_filter = ("status", "original", "nsfw", "animated")
 
-    # def changelist_view(self, request, *args, **kwargs):
-    #     packs_to_review = Pack.objects.filter(status="IN_REVIEW").count()
-    #     if packs_to_review:
-    #         messages.add_message(
-    #             request,
-    #             messages.WARNING,
-    #             mark_safe(
-    #                 f"<b>{packs_to_review} packs are waiting for review.</b> "
-    #                 "<a href='?status__exact=IN_REVIEW'>Review</a>"
-    #             ),
-    #         )
-
-    #     return super().changelist_view(request, *args, **kwargs)
-
     #
     # Edit view
     #

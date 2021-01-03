@@ -1,1 +1,3 @@
+from .contribution_request_serializer import ContributionRequestSerializer
+from .pack_request_serializer import PackRequestSerializer
 from .pack_serializer import PackSerializer

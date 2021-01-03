@@ -5,6 +5,7 @@ from stickers.models import Pack, Tag
 class PackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pack
+        fields = ("pack_id", "pack_key", "source", "tags", "nsfw", "original")
 
     def to_representation(self, obj):
         return {
@@ -22,4 +23,5 @@ class PackSerializer(serializers.ModelSerializer):
                 "author": obj.author,
                 "cover": {"id": 0},  # FIXME
             },
+            "status": obj.status,
         }

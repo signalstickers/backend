@@ -1,6 +1,8 @@
+import re
 from base64 import b64encode
 
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from stickers.utils import detect_animated_pack, get_pack_from_signal
 
@@ -11,8 +13,27 @@ from .pack_status import PackStatus
 class Pack(models.Model):
 
     # Pack info
-    pack_id = models.CharField(max_length=32, unique=True)
-    pack_key = models.CharField(max_length=64)
+    pack_id = models.CharField(
+        max_length=32,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex="^[a-z0-9]{32}$",
+                message="Pack id must be 32, lowercase and numbers.",
+                code="nomatch",
+            )
+        ],
+    )
+    pack_key = models.CharField(
+        max_length=64,
+        validators=[
+            RegexValidator(
+                regex="^[a-z0-9]{64}$",
+                message="Pack key must be 64, lowercase and numbers.",
+                code="nomatch",
+            )
+        ],
+    )
     title = models.CharField(max_length=128)  # computed
     author = models.CharField(max_length=128)  # computed
 
@@ -51,15 +72,25 @@ class Pack(models.Model):
     def clean(self):
 
         # Basic validation
-        if len(self.pack_id) != 32:
-            raise ValidationError("Id shoud be 32 chars long.")
-        if len(self.pack_key) != 64:
-            raise ValidationError("Key shoud be 64 chars long.")
+        if not re.match(r"^[a-z0-9]{32}$", self.pack_id):
+            raise ValidationError("Pack id must be 32, lowercase and numbers.")
+
+        if not re.match(r"^[a-z0-9]{64}$", self.pack_key):
+            raise ValidationError("Pack key must be 64, lowercase and numbers.")
+
+        if len(self.title) > 128:
+            raise ValidationError("Pack title too long.")
+
+        if len(self.author) > 128:
+            raise ValidationError("Author too long.")
+
+        if len(self.source) > 128:
+            raise ValidationError("Source too long.")
 
         # Pack verification
         pack = get_pack_from_signal(self.pack_id, self.pack_key)
         if not pack:
-            raise ValidationError("Pack does not exists: wrong id or key.")
+            raise ValidationError("Pack does not exists on Signal: wrong id or key?")
 
         self.title = pack.title
         self.author = pack.author
@@ -81,6 +112,9 @@ class Pack(models.Model):
         """
         stickers = []  # contains dict {emoji, img}
         pack = get_pack_from_signal(self.pack_id, self.pack_key)
+
+        if not pack:
+            return {}
 
         for sticker in pack.stickers:
             stickers.append(
