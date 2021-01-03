@@ -1,0 +1,67 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n static %}
+{% load admin_urls %}
+
+{% block title %}
+Trigger actions
+{% endblock %}
+
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; Trigger actions
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+<h1>Grouped actions</h1>
+<p>
+    Invalidate all caches on Cloudflare, and tweet all online packs not set as <code>Tweeted</code>
+    ({{nb_not_tweeted}}).
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="cloudflareclear_and_tweet">
+    <input type="submit" value="Clear caches + tweet">
+</form>
+
+<br />
+<hr />
+<br />
+
+<h1>Invalidate Cloudflare caches</h1>
+
+<p>
+    Invalidate all caches on Cloudflare. This is the same as launching <code>manage.py invalidate_cloudflare</code>
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="cloudflareclear">
+    <input type="submit" value="Clear Cloudflare caches">
+</form>
+
+<br />
+<hr />
+<br />
+
+<h1>Trigger tweets</h1>
+
+<p>
+    Tweet all online packs not set as <code>Tweeted</code> ({{nb_not_tweeted}})
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="tweet">
+    <input type="submit" value="Tweet">
+</form>
+
+{{ block.super }}
+{% endblock %}

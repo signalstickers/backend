@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block welcome-msg %}
+{% if packs_to_review %}
+
+<a href="{% url 'admin:core_pack_changelist' %}?status__exact=IN_REVIEW" style="margin-right: 20px;">
+    <span class="to-review">🔔 {{packs_to_review}} pack{{packs_to_review|pluralize:",s"}} to review</span>
+</a>
+{% endif %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'core/admin/admin.css' %}">
+
+{% if debug %}
+<link rel="stylesheet" type="text/css" href="{% static 'core/admin/admin_dev.css' %}">
+{% else %}
+<link rel="stylesheet" type="text/css" href="{% static 'core/admin/admin_prod.css' %}">
+{% endif %}
+
+
+
+{{ block.super }}
+
+<a href="https://signalstickers.com" target="_blank" rel="noopener">signalstickers.com</a> /
+
+<script src="{% static 'core/admin/chart.min.js' %}"></script>
+{% endblock %}

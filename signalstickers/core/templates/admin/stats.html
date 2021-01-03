@@ -1,0 +1,163 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n static %}
+{% load admin_urls %}
+{% load humanize %}
+
+{% block title %}
+Stats
+{% endblock %}
+
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; Stats
+</div>
+{% endblock %}
+
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'core/admin/admin.css' %}">
+
+
+<h1>Data by month</h1>
+
+Homepage hits this month: {{homepage_this_month|intcomma}} (Mean {{all_times_mean|intcomma}} / Med
+{{all_times_med|intcomma}} / Max
+{{all_times_max|intcomma}})
+<br />
+<br />
+<canvas class="graph" id="visitsChart"></canvas>
+
+<script>
+
+    const statsPacks = {{ packs_views_by_month| safe}};
+    const visitsStats = {{ visits_by_month| safe}};
+
+    const orderedStatsPacks = Object.keys(statsPacks).sort().reduce(
+        (obj, key) => {
+            obj[key] = statsPacks[key];
+            return obj;
+        },
+        {}
+    );
+    const orderedVisitsPacks = Object.keys(visitsStats).sort().reduce(
+        (obj, key) => {
+            obj[key] = visitsStats[key];
+            return obj;
+        },
+        {}
+    );
+    const labels = Object.keys(orderedVisitsPacks);
+    const statsPackValues = labels.map(label => orderedStatsPacks[label]);
+    const visitsValues = labels.map(label => orderedVisitsPacks[label]);
+
+
+    new Chart(document.getElementById("visitsChart"), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Pack views",
+                data: statsPackValues,
+                borderColor: "#3e95cd",
+                fill: false,
+                pointHitRadius: 10,
+                tension: 0.3
+            }, {
+                label: "Homepage hits",
+                data: visitsValues,
+                borderColor: "#ff0000",
+                fill: false,
+                pointHitRadius: 10,
+                tension: 0.3
+            }]
+        },
+        options: {
+            title: {
+                display: false,
+            }
+        }
+    });
+
+</script>
+<small class="help">Note that stats are not perfectly accurate before 07/2021.</small>
+<br />
+<br />
+<h1>Stats</h1>
+
+<div class="stats-col">
+    <h2>Most popular packs this month</h2>
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Views</th>
+            <th>Actions</th>
+        </tr>
+        {% for pack in most_popular_this_month%}
+        <tr>
+            <td>{{pack.title}}</td>
+            <td>{{pack.stats_month}}</td>
+            <td>
+                <a href="{% url 'admin:core_pack_change' pack.id %}" title="Edit">📝</a>
+                <a href="https://signalstickers.com/pack/{{pack.pack_id}}" title="View on signalstickers"
+                    target="_blank">👀</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="stats-col">
+
+    <h2>Most popular packs last month</h2>
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Views</th>
+            <th>Actions</th>
+        </tr>
+        {% for pack in most_popular_last_month%}
+        <tr>
+            <td>{{pack.title}}</td>
+            <td>{{pack.stats_month}}</td>
+            <td>
+                <a href="{% url 'admin:core_pack_change' pack.id %}" title="Edit">📝</a>
+                <a href="https://signalstickers.com/pack/{{pack.pack_id}}" title="View on signalstickers"
+                    target="_blank">👀</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="stats-col">
+
+    <h2>Most popular packs all times</h2>
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Views</th>
+            <th>Actions</th>
+        </tr>
+        {% for pack in most_viewed_packs_all_times%}
+        <tr>
+            <td>{{pack.pack.title}}</td>
+            <td>{{pack.views}}</td>
+            <td>
+                <a href="{% url 'admin:core_pack_change' pack.pack.id %}" title="Edit">📝</a>
+                <a href="https://signalstickers.com/pack/{{pack.pack.pack_id}}" title="View on signalstickers"
+                    target="_blank">👀</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+
+
+
+{{ block.super }}
+{% endblock %}

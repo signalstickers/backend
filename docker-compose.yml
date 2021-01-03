@@ -1,0 +1,27 @@
+version: '3.1'
+services:
+  postgres:
+    image: postgres
+    container_name: signalstickers_postgres
+    build:
+      context: .
+      dockerfile: docker/postgres.dockerfile
+    volumes:
+      - "./.pgdata:/var/lib/postgresql/data"
+    restart: always
+    env_file:
+      - docker/db.env
+    ports:
+      - 5432:5432
+
+  adminer:
+    build:
+      context: .
+      dockerfile: docker/adminer.dockerfile
+    container_name: signalstickers_adminer
+    restart: always
+    ports:
+      - 9988:8080
+    env_file:
+      - docker/db.env
+

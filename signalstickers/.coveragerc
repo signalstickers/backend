@@ -1,0 +1,33 @@
+[run]
+
+source =
+    api/
+    core/
+
+branch = True
+
+omit =
+    *__init__.py*
+    */migrations/*
+    *tests.py*
+    manage.py
+    */apps.py
+
+    */admin/*
+    */admin.py
+    # Specific pages
+    core/context_processors.py
+    core/models/site_stat.py
+
+
+[report]
+skip_covered = True
+show_missing = True
+
+exclude_lines =
+    def __str__
+    pragma: no cover
+
+    # Specific classes
+    class AdminTriggerActionsView
+    class AdminStatsView

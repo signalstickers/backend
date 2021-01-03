@@ -1,0 +1,74 @@
+"""
+Modify this file and save it as "prod.py".
+CHANGE ALL VALUES IN THIS FILE.
+"""
+
+from signalstickers.settings.common import *
+
+
+# Obtained from https://developer.twitter.com/
+TWITTER_CONF = {
+    "consumer_key": "FIXME",
+    "consumer_secret": "FIXME",
+    "access_token": "FIXME",
+    "access_token_secret": "FIXME",
+}
+
+
+CLOUDFLARE_CONF = {
+    "zone_id": "FIXME",
+    "token": "FIXME",
+    "files": ["https://example.com"]
+}
+
+
+SECRET_KEY = "FIXME"
+
+DEBUG = False
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+ALLOWED_HOSTS = []
+
+INTERNAL_IPS = ["127.0.0.1", "localhost"]
+
+STATIC_ROOT= "FIXME/"
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "FIXME",
+        "USER": "FIXME",
+        "PASSWORD": "FIXME",
+        "HOST": "FIXME",
+        "PORT": "",
+    }
+}
+
+
+ADMIN_URL = "admin/" # FIXME
+
+
+# Disable Browsable API
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
+}
+
+
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+
+HEADER_IP = "HTTP_FOOBAR"
+
+EMAIL_HOST = "FIXME"
+EMAIL_PORT = 465
+EMAIL_HOST_USER = "FIXME"
+EMAIL_FROM = "\"Signalstickers\" <Signalstickers@example.com>"
+EMAIL_HOST_PASSWORD = "FIXME"
+EMAIL_USE_SSL = True
+EMAIL_TIMEOUT = 5
+
+if SECRET_KEY == "FIXME" or DEBUG == True :
+    exit("Error: set appropriate prod values in settings/prod.py")

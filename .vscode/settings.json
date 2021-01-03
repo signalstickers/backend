@@ -1,0 +1,21 @@
+{
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "python.linting.pylintPath": ".venv/bin/pylint",
+    "python.linting.pylintEnabled": true,
+    "python.sortImports.args": [
+        "-sp .isort.cfg"
+    ],
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
+    "python.pythonPath": ".venv/bin/python",
+    "python.analysis.extraPaths": [
+        "./signalstickers"
+    ],
+    "files.exclude": {
+        "**/__pycache__/": true
+    }
+}

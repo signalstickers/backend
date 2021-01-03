@@ -1,0 +1,88 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+{% load static %}
+
+
+{% block content %}
+
+{{ block.super }}
+
+{% if original.pack_id%}
+
+<h1>Stickers
+  <a id="sticker-preview-link" href="https://signalstickers.com/pack/{{ original.pack_id }}?key={{ original.pack_key }}"
+    target="_blank">Preview 👀</a>
+</h1>
+
+
+{% if original.nsfw %}
+<div class="pack-nsfw">
+  🔞 This pack is NSFW. You've been warned. 🔞
+</div>
+{% endif %}
+
+<div class="stickers-preview-container">
+  {% for sticker in original.stickers_preview %}
+  <div class="sticker-preview">
+    <img src="data:image/png;base64,{{sticker.img}}">
+    <div class="sticker-emoji">
+      {{sticker.emoji}}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+{% endif %}
+
+{% if original.stats %}
+<br />
+<h1>Stats for this pack</h1>
+
+<canvas class="graph" id="visitsChart"></canvas>
+
+<script>
+
+  const stats = {{ original.stats| safe}};
+  const orderedStats = Object.keys(stats).sort().reduce(
+    (obj, key) => {
+      obj[key] = stats[key];
+      return obj;
+    },
+    {}
+  );
+  const labels = Object.keys(orderedStats);
+  const statsValues = labels.map(label => orderedStats[label]);
+
+
+  new Chart(document.getElementById("visitsChart"), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: statsValues,
+        borderColor: "#3e95cd",
+        fill: false,
+        pointHitRadius: 10
+      }]
+    },
+    options: {
+      title: {
+        display: false,
+      },
+      legend: {
+        display: false,
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+      }
+    }
+  });
+
+</script>
+
+{% endif %}
+
+{% endblock %}

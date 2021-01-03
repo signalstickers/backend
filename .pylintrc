@@ -1,0 +1,27 @@
+[MASTER]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    no-self-use,
+    abstract-method,
+    line-too-long,
+    too-many-instance-attributes,
+    too-few-public-methods,
+    signature-differs,
+    too-many-arguments,
+    too-many-locals,
+    too-many-branches, # FIXME remove when possible
+    fixme,
+
+load-plugins=pylint_django
+django-settings-module=signalstickers.settings.dev
+
+
+good-names =
+    i,
+    j,
+    k,
+    ex,
+    e,
+    _
