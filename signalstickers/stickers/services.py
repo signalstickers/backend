@@ -19,16 +19,21 @@ def new_pack(
     animated=False,
     submitter_comments="",
     tags=None,
+    api_via="",
 ) -> Pack:
+
+    if api_via:
+        source = source.strip() + f" (via {api_via})"
+    else:
+        source = source.strip()
 
     tags = tags or []
     if len(tags) > 40:
         raise ValidationError("Too many tags (max 40).")
-
     pack = Pack(
         pack_id=pack_id.strip(),
         pack_key=pack_key.strip(),
-        source=source.strip(),
+        source=source,
         status=status,
         nsfw=nsfw,
         original=original,

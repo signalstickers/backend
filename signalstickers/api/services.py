@@ -5,7 +5,7 @@ import re
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
 
-from api.models import BotPreventionQuestion, ContributionRequest
+from api.models import ApiKey, BotPreventionQuestion, ContributionRequest
 
 
 def new_contribution_request(client_ip):
@@ -35,3 +35,11 @@ def check_contribution_request(contribution_id, client_answer, client_ip):
         return True, None
 
     return False, "Wrong answer."
+
+
+def check_api_key(key):
+    try:
+        key_obj = ApiKey.objects.get(key=key)
+        return key_obj
+    except:
+        return False

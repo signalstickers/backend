@@ -1,5 +1,9 @@
-from api.serializers import PackRequestSerializer, PackSerializer
-from api.services import check_contribution_request
+from api.serializers import (
+    APIPackRequestSerializer,
+    PackRequestSerializer,
+    PackSerializer,
+)
+from api.services import check_api_key, check_contribution_request
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from rest_framework import parsers, status
@@ -21,31 +25,49 @@ class PacksView(APIView):
         return Response(PackSerializer(data, many=True).data)
 
     def put(self, request):
+        """
+        Propose a new pack
+        """
 
-        req_srl = PackRequestSerializer(data=request.data)
+        api_key = request.headers.get("X-Auth-Token")
 
+        if api_key:
+            req_srl = APIPackRequestSerializer(data=request.data)
+        else:
+            req_srl = PackRequestSerializer(data=request.data)
+
+        # Validate the received data
         if not req_srl.is_valid():
-            # These errors should be caught by the UI before sending, so no
-            # pretty message here.
             return Response(
-                {"errors": req_srl.errors}, status=status.HTTP_400_BAD_REQUEST
+                {"notvaliderrors": req_srl.errors}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check contribution request
-        is_cont_req_valid, cont_req_errors = check_contribution_request(
-            req_srl.validated_data.get("contribution_id"),
-            req_srl.validated_data.get("contribution_answer"),
-            request.META.get("REMOTE_ADDR"),
-        )
+        if api_key:
+            # Check API key
+            api_obj = check_api_key(api_key)
+            if not api_obj:
+                return Response({"error": "Bad API key."})
+            api_via = api_obj.name
+        else:
+            # Check contribution request
+            is_cont_req_valid, cont_req_errors = check_contribution_request(
+                req_srl.validated_data.get("contribution_id"),
+                req_srl.validated_data.get("contribution_answer"),
+                request.META.get("REMOTE_ADDR"),
+            )
+            if not is_cont_req_valid:
+                return Response(
+                    {"error": cont_req_errors}, status=status.HTTP_400_BAD_REQUEST
+                )
+            api_via = ""
 
-        if not is_cont_req_valid:
-            return Response({"error": cont_req_errors})
-
+        # Create pack in review
         try:
             pack = new_pack(
                 status=PackStatus.IN_REVIEW.name,
                 **req_srl.validated_data["pack"],
-                submitter_comments=req_srl.validated_data.get("submitter_comments"),
+                submitter_comments=req_srl.validated_data.get("submitter_comments", ""),
+                api_via=api_via
             )
         except ValidationError as val_err:
             return Response(

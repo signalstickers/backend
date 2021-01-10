@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from api.models import BotPreventionQuestion, ContributionRequest
+from api.models import ApiKey, BotPreventionQuestion, ContributionRequest
 
 
 @admin.register(BotPreventionQuestion)
@@ -12,3 +12,8 @@ class BotPreventionQuestionAdmin(admin.ModelAdmin):
 class ContributionRequestAdmin(admin.ModelAdmin):
     fields = ("id", "client_ip", "question", "request_date")
     readonly_fields = fields
+
+
+@admin.register(ApiKey)
+class ApiKeyAdmin(admin.ModelAdmin):
+    fields = ("name", "key")

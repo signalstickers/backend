@@ -3,6 +3,8 @@ from stickers.models import Pack, Tag
 
 
 class PackSerializer(serializers.ModelSerializer):
+    tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+
     class Meta:
         model = Pack
         fields = ("pack_id", "pack_key", "source", "tags", "nsfw", "original")
