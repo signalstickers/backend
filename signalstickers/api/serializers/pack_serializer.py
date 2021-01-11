@@ -2,8 +2,15 @@ from rest_framework import serializers
 from stickers.models import Pack, Tag
 
 
+class TagSlugRelatedField(serializers.SlugRelatedField):
+    def to_internal_value(self, data):
+        return data
+
+
 class PackSerializer(serializers.ModelSerializer):
-    tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
+    tags = TagSlugRelatedField(
+        many=True, slug_field="name", queryset=Tag.objects.none()
+    )
 
     class Meta:
         model = Pack

@@ -27,15 +27,11 @@ class PacksView(APIView):
         cached_data = cache.get(cache_key)
 
         if cached_data:
-            print("###HIT")
             return Response(cached_data, headers={"X-Cache": "HIT"})
-
-        print("### MISS")
 
         data = get_all_online_packs()
         serialized_data = PackSerializer(data, many=True).data
         cache.set(cache_key, serialized_data)
-        print(cache.get(cache_key))
 
         return Response(serialized_data, headers={"X-Cache": "MISS"})
 
