@@ -4,6 +4,7 @@ from api.serializers import (
     PackSerializer,
 )
 from api.services import check_api_key, check_contribution_request
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from rest_framework import parsers, status
@@ -21,8 +22,22 @@ class PacksView(APIView):
         """
         Get the list of all published packs on the site.
         """
+        cache_key = "view__api_packs_list"
+
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            print("###HIT")
+            return Response(cached_data, headers={"X-Cache": "HIT"})
+
+        print("### MISS")
+
         data = get_all_online_packs()
-        return Response(PackSerializer(data, many=True).data)
+        serialized_data = PackSerializer(data, many=True).data
+        cache.set(cache_key, serialized_data)
+        print(cache.get(cache_key))
+
+        return Response(serialized_data, headers={"X-Cache": "MISS"})
 
     def put(self, request):
         """

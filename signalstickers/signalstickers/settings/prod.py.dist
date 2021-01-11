@@ -21,6 +21,19 @@ DATABASES = {
     "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
 }
 
+
+ADMIN_URL = "admin/" # FIXME
+
+
+CACHE_HOST = "127.0.0.1"
+CACHE_PORT = 11211
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": f"{CACHE_HOST}:{CACHE_PORT}",
+    }
+}
+
 # Disable Browsable API
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
