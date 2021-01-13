@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -7,9 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Application definition
 
 INSTALLED_APPS = [
-    "stickers.apps.StickersConfig",
-    "api.apps.ApiConfig",
-    "django.contrib.admin",
+    "apps.stickers",
+    "apps.api",
+    "apps.core",
+    "apps.core.apps.CustomAdmin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -37,7 +39,7 @@ ROOT_URLCONF = "signalstickers.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "signalstickers" / "templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -45,7 +47,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "stickers.context_processors.admin_navbar",
+                "apps.stickers.context_processors.admin_navbar",
             ]
         },
     }

@@ -6,11 +6,15 @@ name = "pypi"
 [packages]
 django = "*"
 django-debug-toolbar = "*"
-signalstickers-client = "*"
 pyyaml = "*"
 djangorestframework = "*"
 django-cors-headers = "*"
 pylibmc = "*"
+psycopg2-binary = "*"
+pygithub = "*"
+signalstickers-client = ">=3.0.0"
+Pillow = "*"
+tweepy = "*"
 
 [dev-packages]
 pylint = "*"

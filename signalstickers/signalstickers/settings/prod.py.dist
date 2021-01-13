@@ -3,8 +3,27 @@ Modify this file and save it as "prod.py".
 CHANGE ALL VALUES IN THIS FILE.
 """
 
-
 from .common import *
+
+# Bots settings
+
+GITHUB_CONF = {
+    "bot_token": "FIXME"
+    "publish_repo_id": "signalstickers/stickers-data",
+    "publish_repo_branch": "master",
+    "outfile": "all_stickers.json",
+}
+
+
+# Obtained from https://developer.twitter.com/
+TWITTER_CONF = {
+    "consumer_key": "FIXME",
+    "consumer_secret": "FIXME",
+    "access_token": "FIXME",
+    "access_token_secret": "FIXME",
+}
+
+
 
 SECRET_KEY = "FIXME"
 
@@ -25,15 +44,6 @@ DATABASES = {
 ADMIN_URL = "admin/" # FIXME
 
 
-CACHE_HOST = "127.0.0.1"
-CACHE_PORT = 11211
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
-        "LOCATION": f"{CACHE_HOST}:{CACHE_PORT}",
-    }
-}
-
 # Disable Browsable API
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
@@ -45,8 +55,7 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 
-ADMINS = []  # FIXME
 
 
-if SECRET_KEY == "FIXME" or DEBUG == True or CORS_ALLOW_ALL_ORIGINS == True:
+if SECRET_KEY == "FIXME" or DEBUG == True or GITHUB_CONF["bot_token"] == "FIXME" :
     exit("Error: set appropriate prod values in settings/prod.py")

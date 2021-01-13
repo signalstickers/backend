@@ -3,10 +3,17 @@
 import os
 import sys
 
+from django.conf import settings
+
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "signalstickers.settings.dev")
+
+    if os.environ.get("ENV_TYPE", "dev") == "prod":
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "signalstickers.settings.prod")
+    else:
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "signalstickers.settings.dev")
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

@@ -1,3 +1,5 @@
+import os
+
 from .common import *
 
 SECRET_KEY = "dev_secret_key"
@@ -5,6 +7,7 @@ SECRET_KEY = "dev_secret_key"
 DEBUG = True
 
 CORS_ALLOW_ALL_ORIGINS = True
+
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -17,16 +20,31 @@ DATABASES = {
 }
 
 
-# Use this for Dummy Cache
-# CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "normal": {"format": "%(asctime)s %(levelname)s %(module)s  %(message)s"}
+    },
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "normal"}},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO"},
+        "": {"handlers": ["console"], "level": "INFO"},
+    },
+}
 
-# Use this for Dockerized Memcached
 
-CACHE_HOST = "127.0.0.1"
-CACHE_PORT = 11211
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
-        "LOCATION": f"{CACHE_HOST}:{CACHE_PORT}",
-    }
+GITHUB_CONF = {
+    "bot_token": os.environ.get("GHTOKEN"),
+    "publish_repo_id": "signalstickers/stickers-data",
+    "publish_repo_branch": "master",
+    "outfile": "all_stickers.json",
+}
+
+# Obtained from https://developer.twitter.com/
+TWITTER_CONF = {
+    "consumer_key": "foo",
+    "consumer_secret": "bar",
+    "access_token": "ga",
+    "access_token_secret": "bu",
 }

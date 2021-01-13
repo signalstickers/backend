@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+
+
+{% block title %}
+Trigger actions
+{% endblock %}
+
+{% block content %}
+
+
+<h1>Trigger publication</h1>
+
+<p>
+    Publish all packs currently set as <code>ONLINE</code> to signalstickers.com.
+    This is the same as launching <code>manage.py publish</code>
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="publish">
+    <input type="submit" value="Publish">
+</form>
+
+<br />
+<hr />
+<br />
+
+<h1>Trigger tweets</h1>
+
+<p>
+    Tweet all online packs not set as <code>Tweeted</code> ({{nb_not_tweeted}})
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="tweet">
+    <input type="submit" value="Tweet">
+</form>
+
+{% endblock %}
