@@ -53,6 +53,7 @@ class Pack(models.Model):
     )
     title = models.CharField(max_length=128)  # computed
     author = models.CharField(max_length=128)  # computed
+    id_cover = models.IntegerField(default=0)
 
     # Metadata
     source = models.CharField(max_length=128, blank=True)
@@ -112,6 +113,7 @@ class Pack(models.Model):
 
         self.title = pack.title
         self.author = pack.author
+        self.id_cover = pack.cover.id
 
         # Animation
         self.animated_detected = detect_animated_pack(pack)

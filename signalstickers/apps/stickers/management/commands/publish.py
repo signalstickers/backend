@@ -31,7 +31,7 @@ def _serialize_pack(pack):
         "manifest": {
             "title": pack.title,
             "author": pack.author,
-            "cover": {"id": 0, "emoji": ""},
+            "cover": {"id": pack.id_cover, "emoji": ""},  # TODO remove "emoji"
         },
     }
     return pack_repr

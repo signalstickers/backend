@@ -1,11 +1,23 @@
 import uuid
+from datetime import datetime, timedelta
 
 from django.db import models
+from django.utils import timezone
 
 from .bot_prevention_questions import BotPreventionQuestion
 
 
+class ContributionRequestManager(models.Manager):
+    def expired(self):
+        """
+        Return expired ContributionRequests (more than 2 hours old)
+        """
+        threshold = timezone.now() - timedelta(hours=2)
+        return ContributionRequest.objects.filter(request_date__lt=threshold)
+
+
 class ContributionRequest(models.Model):
+    objects = ContributionRequestManager()
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     client_ip = models.GenericIPAddressField(protocol="IPv4")

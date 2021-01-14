@@ -6,9 +6,19 @@ from django.conf import settings
 from github import Github
 from libs.twitter_bot import tweet_pack
 
+from apps.api.models import ContributionRequest
 from apps.stickers.models import Pack
 
 logger = logging.getLogger("main")
+
+
+def clear_contribution_requests():
+    """
+    Delete expired ContributionRequests (more than 2 hours old), and return the
+    number of CR deleted.
+    """
+    nb_deleted, _ = ContributionRequest.objects.expired().delete()
+    return nb_deleted
 
 
 def tweet_command():

@@ -36,8 +36,8 @@ LOGGING = {
 
 GITHUB_CONF = {
     "bot_token": os.environ.get("GHTOKEN"),
-    "publish_repo_id": "signalstickers/stickers-data",
-    "publish_repo_branch": "master",
+    "publish_repo_id": "signalstickers-bot/test-signalstickers-data",
+    "publish_repo_branch": "main",
     "outfile": "all_stickers.json",
 }
 

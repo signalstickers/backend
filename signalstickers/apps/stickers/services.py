@@ -55,4 +55,3 @@ def new_pack(
         pack.tags.add(*tags_obj_list)
 
     return pack
-
