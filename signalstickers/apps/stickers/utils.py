@@ -21,14 +21,11 @@ def detect_animated_pack(lib_pack):
     stickers is a APNG or a GIF.
     """
 
-    animated = False
     for sticker in lib_pack.stickers:
         if b"\x61\x63\x54\x4C" in sticker.image_data:  # APNG acTL chunk
-            animated = True
-            break
+            return True
         if sticker.image_data.startswith(
             b"\x47\x49\x46\x38\x39\x61"
         ):  # GIF89a magic numbers
-            animated = True
-            break
-    return animated
+            return True
+    return False

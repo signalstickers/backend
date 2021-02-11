@@ -3,7 +3,14 @@
 This Django app provides an API for `signalstickers.com` to use, as well as a
 control panel to manage packs.
 
-## Installation
+
+## Dev
+
+Install the pipenv (`pipenv install --dev`), and open a pipenv shell (`pipenv
+shell`). You'll then be able to use `manage.py` (e.g. `./manage.py runserver`).
+
+
+## Production
 
 Copy `signalstickers/settings/prod.py.dist` to `signalstickers/settings/prod.py`
 and edit values.
