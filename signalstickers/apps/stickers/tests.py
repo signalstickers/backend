@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from . import utils
-from .models import Pack, PackAnimatedMode, PackStatus
+from .models import PackAnimatedMode, PackStatus
 from .services import new_pack
 
 
@@ -35,12 +35,11 @@ class PackTestCase(TestCase):
             "source": "foobar.com",
             "nsfw": False,
             "original": True,
-            "animated": False,
             "submitter_comments": "Howdy",
             "tags": ["Foo", "Bar", "Foobar"],
         }
 
-    def test_pack_creation_novia(self, mocked_getpacklib):
+    def test_pack_creation_no_via(self, mocked_getpacklib):
         """
         Packs are created correctly
         """
@@ -56,7 +55,6 @@ class PackTestCase(TestCase):
             source=self.testpack["source"],
             nsfw=self.testpack["nsfw"],
             original=self.testpack["original"],
-            animated=self.testpack["animated"],
             submitter_comments=self.testpack["submitter_comments"],
             tags=self.testpack["tags"],
             api_via="",
@@ -71,7 +69,7 @@ class PackTestCase(TestCase):
         self.assertEqual(pack.source, self.testpack["source"])
         self.assertEqual(pack.nsfw, self.testpack["nsfw"])
         self.assertEqual(pack.original, self.testpack["original"])
-        self.assertEqual(pack.animated, self.testpack["animated"])
+        self.assertEqual(pack.animated, False)
         self.assertEqual(pack.submitter_comments, self.testpack["submitter_comments"])
         self.assertFalse(pack.animated_detected)
         self.assertEqual(pack.animated_mode, PackAnimatedMode.AUTO.name)
@@ -80,7 +78,7 @@ class PackTestCase(TestCase):
             sorted([t.lower() for t in self.testpack["tags"]]),
         )
 
-    def test_pack_creation_via(self, mocked_getpacklib):
+    def test_pack_creation_with_via(self, mocked_getpacklib):
         """
         Packs with "via" are created correctly
         """
@@ -96,7 +94,6 @@ class PackTestCase(TestCase):
             source=self.testpack["source"],
             nsfw=self.testpack["nsfw"],
             original=self.testpack["original"],
-            animated=self.testpack["animated"],
             submitter_comments=self.testpack["submitter_comments"],
             tags=self.testpack["tags"],
             api_via="foo",

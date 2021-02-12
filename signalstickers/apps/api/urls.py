@@ -5,7 +5,7 @@ from apps.api.views import ContributionRequestView, PacksView
 
 urlpatterns = [
     # Packs
-    path("packs/", PacksView.as_view()),
+    path("packs/", PacksView.as_view(), name="packs"),
     # Contribution request
     path("contributionrequest/", ContributionRequestView.as_view()),
 ]

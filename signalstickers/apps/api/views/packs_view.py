@@ -16,6 +16,14 @@ from rest_framework.views import APIView
 class PacksView(APIView):
     parser_classes = (parsers.JSONParser,)
 
+    def get(self, request):
+        """
+        List all packs
+        """
+        all_packs = Pack.objects.onlines()
+        serializer = PackSerializer(all_packs, many=True)
+        return Response(serializer.data)
+
     def put(self, request):
         """
         Propose a new pack

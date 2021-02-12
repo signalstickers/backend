@@ -16,7 +16,6 @@ def new_pack(
     source="",
     nsfw=False,
     original=False,
-    animated=False,
     submitter_comments="",
     tags=None,
     api_via="",
@@ -38,7 +37,6 @@ def new_pack(
         status=status,
         nsfw=nsfw,
         original=original,
-        animated=animated,
         submitter_comments=submitter_comments,
         tweeted=tweeted,
     )

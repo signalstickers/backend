@@ -30,7 +30,7 @@ class PackSerializer(serializers.ModelSerializer):
             "manifest": {
                 "title": obj.title,
                 "author": obj.author,
-                "cover": {"id": 0},  # FIXME
+                "cover": {"id": obj.id_cover},
             },
             "status": obj.status,
         }
