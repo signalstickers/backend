@@ -28,4 +28,4 @@ jobs:
     - name: Test
       run: |
         cd signalstickers
-        ./manage.py test
+        pipenv run python manage.py test
