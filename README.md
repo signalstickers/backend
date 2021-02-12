@@ -1,4 +1,8 @@
-# Backend for `signalstickers.com`
+
+![](https://github.com/signalstickers/backend/workflows/Test/badge.svg)
+
+# Backend for signalstickers
+
 
 This Django app provides an API for `signalstickers.com` to use, as well as a
 control panel to manage packs.
