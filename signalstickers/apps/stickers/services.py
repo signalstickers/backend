@@ -3,10 +3,10 @@ from typing import List
 
 import anyio
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from apps.stickers.models import Pack, PackStatus, Tag
-from apps.stickers.utils import get_pack_from_signal
 
 
 def new_pack(
@@ -44,14 +44,16 @@ def new_pack(
     )
 
     pack.clean()
-    pack.save()
 
-    tags_obj_list = []
-    for tag in tags:
-        tag_obj, _ = Tag.objects.get_or_create(name=tag.lower())
-        tags_obj_list.append(tag_obj)
+    with transaction.atomic():
+        pack.save()
 
-    if tags_obj_list:
-        pack.tags.add(*tags_obj_list)
+        tags_obj_list = []
+        for tag in tags:
+            tag_obj, _ = Tag.objects.get_or_create(name=tag.lower())
+            tags_obj_list.append(tag_obj)
+
+        if tags_obj_list:
+            pack.tags.add(*tags_obj_list)
 
     return pack

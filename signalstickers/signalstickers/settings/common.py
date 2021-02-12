@@ -8,6 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Application definition
 
 INSTALLED_APPS = [
+    "adminsortable2",
     "apps.stickers",
     "apps.api",
     "apps.core",

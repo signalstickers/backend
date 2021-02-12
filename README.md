@@ -9,6 +9,8 @@ control panel to manage packs.
 Install the pipenv (`pipenv install --dev`), and open a pipenv shell (`pipenv
 shell`). You'll then be able to use `manage.py` (e.g. `./manage.py runserver`).
 
+Run tests with `./manage.py test`
+
 
 ## Production
 
