@@ -104,7 +104,7 @@ validated first by admins.
 
 Request a `ContributionRequest`. Do an empty `HTTP POST` on this endpoint to
 obtain a `contribution_id` and a `contribution_question`. A
-`ContributionRequest` is valid for 1 hour.
+`ContributionRequest` is valid for 2 hours.
 
 When submitting a pack via `PUT /packs/`, include the `contribution_id` and the
 answer to the `contribution_question`.
