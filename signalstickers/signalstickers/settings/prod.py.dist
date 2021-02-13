@@ -24,6 +24,14 @@ TWITTER_CONF = {
 }
 
 
+CLOUDFRONT_CONF = {
+    "distribution_id": "FIXME",
+    "invalidation_path": ["FIXME"],
+    "access_key": "FIXME",
+    "secret_key": "FIXME"
+}
+
+
 
 SECRET_KEY = "FIXME"
 

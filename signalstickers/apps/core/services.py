@@ -1,9 +1,8 @@
-import json
 import logging
-from hashlib import sha1
+import time
 
+import boto3
 from django.conf import settings
-from github import Github
 from libs.twitter_bot import tweet_pack
 
 from apps.api.models import ContributionRequest
@@ -50,70 +49,31 @@ def tweet_command():
     return nb_packs_twitted, errs
 
 
-def publish_command():
+def invalidate_cdn():
     """
-    Serialize all packs and publish them on Github
+    Send an invalidation request to the CDN
     """
 
-    def _serialize_pack(pack):
-        """
-        Serialize a pack in the right format for publishing
-        """
-        meta = {
-            "id": pack.pack_id,
-            "key": pack.pack_key,
-            "source": pack.source,
-            "tags": [tag.name for tag in pack.tags.all()],
-            "nsfw": pack.nsfw,
-            "animated": pack.animated,
-            "original": pack.original,
-        }
+    try:
+        cloudfront_client = boto3.client(
+            "cloudfront",
+            aws_access_key_id=settings.CLOUDFRONT_CONF["access_key"],
+            aws_secret_access_key=settings.CLOUDFRONT_CONF["secret_key"],
+        )
 
-        pack_repr = {
-            "meta": {k: v for k, v in meta.items() if v},
-            "manifest": {
-                "title": pack.title,
-                "author": pack.author,
-                "cover": {"id": 0, "emoji": ""},
+        resp = cloudfront_client.create_invalidation(
+            DistributionId=settings.CLOUDFRONT_CONF["distribution_id"],
+            InvalidationBatch={
+                "Paths": {
+                    "Quantity": len(settings.CLOUDFRONT_CONF["invalidation_path"]),
+                    "Items": settings.CLOUDFRONT_CONF["invalidation_path"],
+                },
+                "CallerReference": f"{int(time.time())}",
             },
-        }
-        return pack_repr
-
-    print("hello bb from print")
-    pack_list = []
-
-    for pack in Pack.objects.onlines():
-        pack_list.append(_serialize_pack(pack))
-
-    packs_repr = json.dumps(pack_list)
-
-    gh_client = Github(settings.GITHUB_CONF["bot_token"])
-    repo = gh_client.get_repo(settings.GITHUB_CONF["publish_repo_id"])
-
-    # Get previous content
-    contents = repo.get_contents(
-        settings.GITHUB_CONF["outfile"], ref=settings.GITHUB_CONF["publish_repo_branch"]
-    )
-
-    # Compute new content SHA1
-    new_content_sha = sha1(f"blob {len(packs_repr)}\0{packs_repr}".encode()).hexdigest()
-
-    if new_content_sha == contents.sha:
-        mess = "Already up to date"
-        logger.info(mess)
-
+        )
+    except Exception as e:
+        mess = f"Error when invalidating caches: {e}"
+        logger.error(mess)
         return False, mess
 
-    # Update
-    ret = repo.update_file(
-        contents.path,
-        "Update stickers",
-        packs_repr,
-        contents.sha,
-        branch=settings.GITHUB_CONF["publish_repo_branch"],
-    )
-
-    mess = f"Update done in commit {ret['commit'].sha}. Total packs: {len(pack_list)}"
-    logger.info(mess)
-
-    return True, mess
+    return True, resp

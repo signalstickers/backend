@@ -16,13 +16,14 @@ signalstickers-client = ">=3.0.0"
 Pillow = "*"
 tweepy = "*"
 django-admin-sortable2 = "*"
-coverage = "*"
+boto3 = "*"
 
 [dev-packages]
 pylint = "*"
 pylint-django = "*"
 black = "==19.3b0"
 isort = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.7"

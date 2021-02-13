@@ -8,17 +8,16 @@ Trigger actions
 {% block content %}
 
 
-<h1>Trigger publication</h1>
+<h1>Invalidate Cloudfront caches</h1>
 
 <p>
-    Publish all packs currently set as <code>ONLINE</code> to signalstickers.com.
-    This is the same as launching <code>manage.py publish</code>
+    Invalidate all caches on Cloudfront. This is the same as launching <code>manage.py invalidate_cloudfront</code>
 </p>
 
 <form method="POST">
     {% csrf_token %}
-    <input type="hidden" name="action" value="publish">
-    <input type="submit" value="Publish">
+    <input type="hidden" name="action" value="cloudfrontclear">
+    <input type="submit" value="Clear Cloudfront caches">
 </form>
 
 <br />

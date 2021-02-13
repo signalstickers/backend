@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 from django.views.generic import View
 
-from apps.core.services import publish_command, tweet_command
+from apps.core.services import invalidate_cdn, tweet_command
 from apps.stickers.models import Pack
 
 
@@ -19,20 +19,19 @@ class AdminTriggerActionsView(View):
         )
 
     def post(self, request):
-        if request.POST.get("action") == "publish":
+        if request.POST.get("action") == "cloudfrontclear":
 
-            success, message = publish_command()
+            success, output = invalidate_cdn()
 
             if success:
                 messages.success(
                     request,
-                    mark_safe(f"Publication triggered. Output: <code>{message}</code>"),
+                    mark_safe(
+                        f"Cloudfront caches cleared. Output: <code>{output}</code>"
+                    ),
                 )
             else:
-                messages.error(
-                    request,
-                    mark_safe(f"Publication aborted. Output: <code>{message}</code>"),
-                )
+                messages.error(request, output)
 
         elif request.POST.get("action") == "tweet":
 
