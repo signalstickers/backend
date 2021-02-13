@@ -158,9 +158,9 @@ class PackTestCase(TestCase):
                 status=PackStatus.IN_REVIEW.name,
             )
 
-    def test_validation_pack_source(self, mocked_getpacklib):
+    def test_validation_pack_metadata(self, mocked_getpacklib):
         """
-        Validation of the pack source (format)
+        Validation of the pack title, author and source (format)
         """
 
         mocked_getpacklib.return_value = None
@@ -171,6 +171,24 @@ class PackTestCase(TestCase):
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
                 source="a" * 130,
+            )
+
+        mocked_getpacklib.return_value = TestPack("a" * 200, "b", b"\x00")
+
+        with self.assertRaisesRegex(ValidationError, "Pack title too long"):
+            new_pack(
+                pack_id=self.testpack["pack_id"],
+                pack_key=self.testpack["pack_key"],
+                status=PackStatus.IN_REVIEW.name,
+            )
+
+        mocked_getpacklib.return_value = TestPack("a", "b" * 200, b"\x00")
+
+        with self.assertRaisesRegex(ValidationError, "Author too long"):
+            new_pack(
+                pack_id=self.testpack["pack_id"],
+                pack_key=self.testpack["pack_key"],
+                status=PackStatus.IN_REVIEW.name,
             )
 
     def test_validation_tags(self, mocked_getpacklib):

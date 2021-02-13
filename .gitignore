@@ -3,3 +3,4 @@ signalstickers/db.sqlite3
 __pycache__
 deploy_scripts/
 .env
+.coverage

@@ -97,12 +97,6 @@ class Pack(models.Model):
         if not re.match(r"^[a-z0-9]{64}$", self.pack_key):
             raise ValidationError("Pack key must be 64, lowercase and numbers.")
 
-        if len(self.title) > 128:
-            raise ValidationError("Pack title too long.")
-
-        if len(self.author) > 128:
-            raise ValidationError("Author too long.")
-
         if len(self.source) > 128:
             raise ValidationError("Source too long.")
 
@@ -114,6 +108,12 @@ class Pack(models.Model):
         self.title = pack.title
         self.author = pack.author
         self.id_cover = pack.cover.id
+
+        if len(self.title) > 128:
+            raise ValidationError("Pack title too long.")
+
+        if len(self.author) > 128:
+            raise ValidationError("Author too long.")
 
         # Animation
         self.animated_detected = detect_animated_pack(pack)

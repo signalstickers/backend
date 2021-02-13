@@ -22,7 +22,22 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+
+    is_testing = "test" in sys.argv
+    if is_testing:
+        import coverage
+
+        cov = coverage.coverage()
+        cov.set_option("report:show_missing", True)
+        cov.erase()
+        cov.start()
+
     execute_from_command_line(sys.argv)
+    if is_testing:
+        print(f"\n\n{'='*30} Coverage {'='*30}\n")
+        cov.stop()
+        cov.save()
+        cov.report()
 
 
 if __name__ == "__main__":
