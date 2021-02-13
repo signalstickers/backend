@@ -1,8 +1,8 @@
+from apps.stickers.models import PackStatus
+from apps.stickers.services import new_pack
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
-from apps.stickers.models import PackStatus
-from apps.stickers.services import new_pack
 from yaml import Dumper, Loader, dump, load
 
 
@@ -17,7 +17,7 @@ class Command(BaseCommand):
         nb_imported = 0
         data = load(options["input_file"], Loader=Loader)
 
-        for pack_id, pack_data in data.items():
+        for pack_id, pack_data in dict(reversed(list(data.items()))).items():
 
             try:
                 pack = new_pack(
@@ -27,7 +27,6 @@ class Command(BaseCommand):
                     status=PackStatus.ONLINE.name,
                     nsfw=pack_data.get("nsfw", False),
                     original=pack_data.get("original", False),
-                    animated=pack_data.get("animated", False),
                     tags=pack_data.get("tags", None),
                     tweeted=True,
                 )

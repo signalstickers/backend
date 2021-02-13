@@ -5,15 +5,6 @@ CHANGE ALL VALUES IN THIS FILE.
 
 from .common import *
 
-# Bots settings
-
-GITHUB_CONF = {
-    "bot_token": "FIXME"
-    "publish_repo_id": "signalstickers/stickers-data",
-    "publish_repo_branch": "master",
-    "outfile": "all_stickers.json",
-}
-
 
 # Obtained from https://developer.twitter.com/
 TWITTER_CONF = {
@@ -65,5 +56,5 @@ SESSION_COOKIE_SECURE = True
 
 
 
-if SECRET_KEY == "FIXME" or DEBUG == True or GITHUB_CONF["bot_token"] == "FIXME" :
+if SECRET_KEY == "FIXME" or DEBUG == True :
     exit("Error: set appropriate prod values in settings/prod.py")
