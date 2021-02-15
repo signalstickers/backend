@@ -26,11 +26,123 @@ class TestPack:
 
 
 @patch("apps.stickers.models.pack.get_pack_from_signal", autospec=True)
-class APITestCase(TestCase):
+class ContributionTestCase(TestCase):
     def setUp(self):
         q = BotPreventionQuestion(question="foo", answer="bar")
         q.save()
 
+    def test_propose_pack_(self, mocked_getpacklib):
+        """
+        Valid Pack request
+        """
+        mocked_getpacklib.return_value = TestPack("Pack title", "Pack author", b"\x00")
+
+        contrib_req = new_contribution_request("10.0.0.42")
+
+        response = self.client.put(
+            reverse("contribute"),
+            {
+                "pack": {
+                    "pack_id": "a" * 32,
+                    "pack_key": "b" * 64,
+                    "source": "source.example.com",
+                    "tags": ["Foo", "Bar", "Foobar"],
+                    "nsfw": True,
+                    "original": False,
+                },
+                "contribution_id": contrib_req.id,
+                "contribution_answer": contrib_req.question.answer,
+                "submitter_comments": "Thanks",
+            },
+            content_type="application/json",
+            REMOTE_ADDR="10.0.0.42",
+        )
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({"success": True}, response.data)
+        self.assertEqual(1, len(Pack.objects.all()))
+        self.assertEqual(0, len(Pack.objects.onlines()))
+
+        pack = Pack.objects.get()
+
+        self.assertEqual(pack.status, PackStatus.IN_REVIEW.name)
+        self.assertEqual(pack.pack_id, "a" * 32)
+        self.assertEqual(pack.pack_key, "b" * 64)
+        self.assertEqual(pack.title, "Pack title")
+        self.assertEqual(pack.author, "Pack author")
+        self.assertEqual(pack.id_cover, 42)
+        self.assertEqual(pack.source, "source.example.com")
+        self.assertEqual(pack.nsfw, True)
+        self.assertEqual(pack.original, False)
+        self.assertEqual(
+            sorted([str(t) for t in pack.tags.all()]), sorted(["foo", "bar", "foobar"])
+        )
+        self.assertEqual(pack.submitter_comments, "Thanks")
+
+    def test_propose_pack_invalid_contributionrequest(self, mocked_getpacklib):
+        """
+        Packs requests with invalid/expired contributionrequest should not be
+        accepted
+        """
+        logging.disable(logging.CRITICAL)
+        mocked_getpacklib.return_value = TestPack(
+            "Pack title 1", "Pack author 1", b"\x00"
+        )
+
+        response = self.client.put(
+            reverse("contribute"),
+            {
+                "pack": {
+                    "pack_id": "a" * 32,
+                    "pack_key": "b" * 64,
+                    "source": "signalstickers.com",
+                    "tags": ["Foo", "Bar", "Foobar"],
+                    "nsfw": True,
+                    "original": False,
+                },
+                "contribution_id": "6c7ab3b4-59cf-423a-a5c6-a8987c0bafd5",  # invalid
+                "contribution_answer": "foobar",
+                "submitter_comments": "Thanks",
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data, {"error": "- Invalid contribution request. Try again."}
+        )
+        self.assertEqual(list(Pack.objects.all()), [])
+
+    def test_propose_pack_no_contributionrequest(self, mocked_getpacklib):
+        """
+        Packs requests with no contributionrequest should not be accepted
+        """
+        logging.disable(logging.CRITICAL)
+        mocked_getpacklib.return_value = TestPack(
+            "Pack title 1", "Pack author 1", b"\x00"
+        )
+
+        response = self.client.put(
+            reverse("contribute"),
+            {
+                "pack": {
+                    "pack_id": "a" * 32,
+                    "pack_key": "b" * 64,
+                    "source": "signalstickers.com",
+                    "tags": ["Foo", "Bar", "Foobar"],
+                    "nsfw": True,
+                    "original": False,
+                }
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(list(Pack.objects.all()), [])
+
+
+@patch("apps.stickers.models.pack.get_pack_from_signal", autospec=True)
+class PackTestCase(TestCase):
     def test_get_all_packs(self, mocked_getpacklib):
         """
         Test for the API path that returns all the ONLINE packs
@@ -116,111 +228,3 @@ class APITestCase(TestCase):
             response.data,
         )
 
-    def test_propose_pack_(self, mocked_getpacklib):
-        """
-        Valid Pack request
-        """
-        mocked_getpacklib.return_value = TestPack("Pack title", "Pack author", b"\x00")
-
-        contrib_req = new_contribution_request("10.0.0.42")
-
-        response = self.client.put(
-            reverse("packs"),
-            {
-                "pack": {
-                    "pack_id": "a" * 32,
-                    "pack_key": "b" * 64,
-                    "source": "source.example.com",
-                    "tags": ["Foo", "Bar", "Foobar"],
-                    "nsfw": True,
-                    "original": False,
-                },
-                "contribution_id": contrib_req.id,
-                "contribution_answer": contrib_req.question.answer,
-                "submitter_comments": "Thanks",
-            },
-            content_type="application/json",
-            REMOTE_ADDR="10.0.0.42",
-        )
-
-        self.assertEqual(status.HTTP_200_OK, response.status_code)
-        self.assertEqual({"success": True}, response.data)
-        self.assertEqual(1, len(Pack.objects.all()))
-        self.assertEqual(0, len(Pack.objects.onlines()))
-
-        pack = Pack.objects.get()
-
-        self.assertEqual(pack.status, PackStatus.IN_REVIEW.name)
-        self.assertEqual(pack.pack_id, "a" * 32)
-        self.assertEqual(pack.pack_key, "b" * 64)
-        self.assertEqual(pack.title, "Pack title")
-        self.assertEqual(pack.author, "Pack author")
-        self.assertEqual(pack.id_cover, 42)
-        self.assertEqual(pack.source, "source.example.com")
-        self.assertEqual(pack.nsfw, True)
-        self.assertEqual(pack.original, False)
-        self.assertEqual(
-            sorted([str(t) for t in pack.tags.all()]), sorted(["foo", "bar", "foobar"])
-        )
-        self.assertEqual(pack.submitter_comments, "Thanks")
-
-    def test_propose_pack_invalid_contributionrequest(self, mocked_getpacklib):
-        """
-        Packs requests with invalid/expired contributionrequest should not be
-        accepted
-        """
-        logging.disable(logging.CRITICAL)
-        mocked_getpacklib.return_value = TestPack(
-            "Pack title 1", "Pack author 1", b"\x00"
-        )
-
-        response = self.client.put(
-            reverse("packs"),
-            {
-                "pack": {
-                    "pack_id": "a" * 32,
-                    "pack_key": "b" * 64,
-                    "source": "signalstickers.com",
-                    "tags": ["Foo", "Bar", "Foobar"],
-                    "nsfw": True,
-                    "original": False,
-                },
-                "contribution_id": "6c7ab3b4-59cf-423a-a5c6-a8987c0bafd5",  # invalid
-                "contribution_answer": "foobar",
-                "submitter_comments": "Thanks",
-            },
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data, {"error": "- Invalid contribution request. Try again."}
-        )
-        self.assertEqual(list(Pack.objects.all()), [])
-
-    def test_propose_pack_no_contributionrequest(self, mocked_getpacklib):
-        """
-        Packs requests with no contributionrequest should not be accepted
-        """
-        logging.disable(logging.CRITICAL)
-        mocked_getpacklib.return_value = TestPack(
-            "Pack title 1", "Pack author 1", b"\x00"
-        )
-
-        response = self.client.put(
-            reverse("packs"),
-            {
-                "pack": {
-                    "pack_id": "a" * 32,
-                    "pack_key": "b" * 64,
-                    "source": "signalstickers.com",
-                    "tags": ["Foo", "Bar", "Foobar"],
-                    "nsfw": True,
-                    "original": False,
-                }
-            },
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(list(Pack.objects.all()), [])

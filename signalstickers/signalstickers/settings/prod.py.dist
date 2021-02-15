@@ -26,7 +26,7 @@ CLOUDFRONT_CONF = {
 
 SECRET_KEY = "FIXME"
 
-DEBUG = True
+DEBUG = False
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -34,9 +34,17 @@ ALLOWED_HOSTS = []
 
 INTERNAL_IPS = ["127.0.0.1", "localhost"]
 
+STATIC_ROOT= "FIXME/"
 
 DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "FIXME",
+        "USER": "FIXME",
+        "PASSWORD": "FIXME",
+        "HOST": "FIXME",
+        "PORT": "",
+    }
 }
 
 
