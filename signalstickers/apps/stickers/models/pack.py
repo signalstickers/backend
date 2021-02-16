@@ -5,9 +5,11 @@ from apps.stickers.utils import detect_animated_pack, get_pack_from_signal
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Prefetch, prefetch_related_objects
 
 from .pack_animated_mode import PackAnimatedMode
 from .pack_status import PackStatus
+from .tag import Tag
 
 
 class PackManager(models.Manager):
@@ -15,7 +17,12 @@ class PackManager(models.Manager):
         """
         Return only packs "ONLINE", last packs first.
         """
-        return Pack.objects.filter(status=PackStatus.ONLINE.name).order_by("-id")
+
+        return (
+            Pack.objects.filter(status=PackStatus.ONLINE.name)
+            .order_by("-id")
+            .prefetch_related("tags")
+        )
 
     def not_twitteds(self):
         """
@@ -116,7 +123,8 @@ class Pack(models.Model):
             raise ValidationError("Author too long.")
 
         # Animation
-        self.animated_detected = detect_animated_pack(pack)
+        # self.animated_detected = detect_animated_pack(pack)
+        self.animated_detected = False
         if self.animated_mode == PackAnimatedMode.AUTO.name:
             self.animated = self.animated_detected
         elif self.animated_mode == PackAnimatedMode.FORCE_ANIMATED.name:

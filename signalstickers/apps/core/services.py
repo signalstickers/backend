@@ -1,7 +1,7 @@
 import logging
 import time
 
-import boto3
+import requests
 from django.conf import settings
 from libs.twitter_bot import tweet_pack
 
@@ -55,25 +55,19 @@ def invalidate_cdn():
     """
 
     try:
-        cloudfront_client = boto3.client(
-            "cloudfront",
-            aws_access_key_id=settings.CLOUDFRONT_CONF["access_key"],
-            aws_secret_access_key=settings.CLOUDFRONT_CONF["secret_key"],
-        )
 
-        resp = cloudfront_client.create_invalidation(
-            DistributionId=settings.CLOUDFRONT_CONF["distribution_id"],
-            InvalidationBatch={
-                "Paths": {
-                    "Quantity": len(settings.CLOUDFRONT_CONF["invalidation_path"]),
-                    "Items": settings.CLOUDFRONT_CONF["invalidation_path"],
-                },
-                "CallerReference": f"{int(time.time())}",
-            },
-        )
+        url = f'https://api.cloudflare.com/client/v4/zones/{settings.CLOUDFLARE_CONF["zone_id"]}/purge_cache'
+        headers = {"Authorization": f'Bearer {settings.CLOUDFLARE_CONF["token"]}'}
+        data = {"files": settings.CLOUDFLARE_CONF["files"]}
+
+        resp = requests.post(url, json=data, headers=headers)
+
+        if resp.status_code not in range(200, 300):
+            raise Exception(resp.text)
+
     except Exception as e:
         mess = f"Error when invalidating caches: {e}"
         logger.error(mess)
         return False, mess
 
-    return True, resp
+    return True, resp.text

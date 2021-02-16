@@ -7,7 +7,7 @@ logger = logging.getLogger("main")
 
 
 class Command(BaseCommand):
-    help = "Clean Cloudfront caches"
+    help = "Clean Cloudflare caches"
 
     def handle(self, *args, **options):
         invalidate_cdn()

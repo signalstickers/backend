@@ -15,13 +15,11 @@ TWITTER_CONF = {
 }
 
 
-CLOUDFRONT_CONF = {
-    "distribution_id": "FIXME",
-    "invalidation_path": ["FIXME"],
-    "access_key": "FIXME",
-    "secret_key": "FIXME"
+CLOUDFLARE_CONF = {
+    "zone_id": "FIXME",
+    "token": "FIXME",
+    "files": ["https://example.com"]
 }
-
 
 
 SECRET_KEY = "FIXME"

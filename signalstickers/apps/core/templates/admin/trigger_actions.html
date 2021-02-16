@@ -8,16 +8,16 @@ Trigger actions
 {% block content %}
 
 
-<h1>Invalidate Cloudfront caches</h1>
+<h1>Invalidate Cloudflare caches</h1>
 
 <p>
-    Invalidate all caches on Cloudfront. This is the same as launching <code>manage.py invalidate_cloudfront</code>
+    Invalidate all caches on Cloudflare. This is the same as launching <code>manage.py invalidate_cloudflare</code>
 </p>
 
 <form method="POST">
     {% csrf_token %}
-    <input type="hidden" name="action" value="cloudfrontclear">
-    <input type="submit" value="Clear Cloudfront caches">
+    <input type="hidden" name="action" value="cloudflareclear">
+    <input type="submit" value="Clear Cloudflare caches">
 </form>
 
 <br />

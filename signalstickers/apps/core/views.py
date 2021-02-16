@@ -3,6 +3,7 @@ from io import StringIO
 from django.contrib import messages
 from django.core.management import call_command
 from django.shortcuts import render
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.views.generic import View
 
@@ -19,7 +20,7 @@ class AdminTriggerActionsView(View):
         )
 
     def post(self, request):
-        if request.POST.get("action") == "cloudfrontclear":
+        if request.POST.get("action") == "cloudflareclear":
 
             success, output = invalidate_cdn()
 
@@ -27,7 +28,7 @@ class AdminTriggerActionsView(View):
                 messages.success(
                     request,
                     mark_safe(
-                        f"Cloudfront caches cleared. Output: <code>{output}</code>"
+                        f"Cloudflare caches cleared. Output: <code>{escape(output)}</code>"
                     ),
                 )
             else:
