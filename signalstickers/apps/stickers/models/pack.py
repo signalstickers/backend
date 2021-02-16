@@ -123,8 +123,7 @@ class Pack(models.Model):
             raise ValidationError("Author too long.")
 
         # Animation
-        # self.animated_detected = detect_animated_pack(pack)
-        self.animated_detected = False
+        self.animated_detected = detect_animated_pack(pack)
         if self.animated_mode == PackAnimatedMode.AUTO.name:
             self.animated = self.animated_detected
         elif self.animated_mode == PackAnimatedMode.FORCE_ANIMATED.name:
