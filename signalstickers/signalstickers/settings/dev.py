@@ -41,3 +41,5 @@ TWITTER_CONF = {
     "access_token": "ga",
     "access_token_secret": "bu",
 }
+
+HEADER_IP = "REMOTE_ADDR"

@@ -1,8 +1,8 @@
-from django.contrib import admin, messages
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
 from apps.stickers.models import Pack, PackStatus
 from apps.stickers.utils import get_pack_from_signal
+from django.contrib import admin, messages
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 
 @admin.register(Pack)
@@ -19,11 +19,14 @@ class PackAdmin(admin.ModelAdmin):
 
     def _view(self, obj):
         if obj.status == PackStatus.ONLINE.name:
-            return mark_safe(
-                f'<a target="_blank" href="https://signalstickers.com/pack/{escape(obj.pack_id)}">View</a>'
+            return format_html(
+                '<a target="_blank" href="https://signalstickers.com/pack/{}">View</a>',
+                obj.pack_id,
             )
-        return mark_safe(
-            f'<a target="_blank" href="https://signalstickers.com/pack/{escape(obj.pack_id)}?key={escape(obj.pack_key)}">View</a>'
+        return format_html(
+            '<a target="_blank" href="https://signalstickers.com/pack/{}?key={}">View</a>',
+            obj.pack_id,
+            obj.pack_key,
         )
 
     #

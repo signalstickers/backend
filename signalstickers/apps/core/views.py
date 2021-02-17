@@ -3,8 +3,7 @@ from io import StringIO
 from django.contrib import messages
 from django.core.management import call_command
 from django.shortcuts import render
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.views.generic import View
 
 from apps.core.services import invalidate_cdn, tweet_command
@@ -27,12 +26,17 @@ class AdminTriggerActionsView(View):
             if success:
                 messages.success(
                     request,
-                    mark_safe(
-                        f"Cloudflare caches cleared. Output: <code>{escape(output)}</code>"
+                    format_html(
+                        "Cloudflare caches cleared. Output: <code>{}</code>", output
                     ),
                 )
             else:
-                messages.error(request, output)
+                messages.error(
+                    request,
+                    format_html(
+                        "Error when invalidating caches: <code>{}</code>", output
+                    ),
+                )
 
         elif request.POST.get("action") == "tweet":
 
@@ -41,7 +45,12 @@ class AdminTriggerActionsView(View):
             if nb_packs_tweeted:
                 messages.success(request, f"Packs twitted: {nb_packs_tweeted}.")
             else:
-                messages.error(request, f"No pack has been tweeted. Errors: {errs}")
+                messages.error(
+                    request,
+                    format_html(
+                        "No pack has been tweeted. Errors: <code>{}</code>", errs
+                    ),
+                )
 
         return render(
             request,

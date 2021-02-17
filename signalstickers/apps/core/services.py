@@ -68,6 +68,6 @@ def invalidate_cdn():
     except Exception as e:
         mess = f"Error when invalidating caches: {e}"
         logger.error(mess)
-        return False, mess
+        return False, str(e)
 
     return True, resp.text
