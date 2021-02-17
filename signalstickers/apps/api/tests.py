@@ -184,7 +184,7 @@ class PackTestCase(TestCase):
             api_via="TestClient 1",
         )
 
-        # Second pack, status ONLINE: should be returned first by the API
+        # Second pack, status ONLINE: should be returned second by the API
         mocked_getpacklib.return_value = TestPack(
             "Pack title 2", "Pack author 2", b"\x61\x63\x54\x4C"
         )
@@ -201,21 +201,45 @@ class PackTestCase(TestCase):
             api_via="TestClient 2",
         )
 
+        # Third pack, status ONLINE: should be returned first by the API
+        mocked_getpacklib.return_value = TestPack(
+            "Pack title 2", "Pack author 2", b"\x00"
+        )
+        new_pack(
+            pack_id="e" * 32,
+            pack_key="f" * 64,
+            status=PackStatus.ONLINE.name,
+            source="",
+            nsfw=False,
+            original=False,
+            submitter_comments="Not visible in the API3",
+            tags=[],
+            api_via="",
+        )
+
         # Status IN_REVIEW: should NOT be returned by the API
-        new_pack(pack_id="e" * 32, pack_key="f" * 64, status=PackStatus.IN_REVIEW.name)
+        new_pack(pack_id="g" * 32, pack_key="h" * 64, status=PackStatus.IN_REVIEW.name)
         response = self.client.get(reverse("packs"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "application/json")
         self.assertEqual(
+            response.data,
             [
+                {
+                    "meta": {"id": "e" * 32, "key": "f" * 64},
+                    "manifest": {
+                        "title": "Pack title 2",
+                        "author": "Pack author 2",
+                        "cover": {"id": 42},
+                    },
+                },
                 {
                     "meta": {
                         "id": "c" * 32,
                         "key": "d" * 64,
                         "source": "Source 2 (via TestClient 2)",
                         "tags": ["cbar2", "cfoobar2", "foo2"],
-                        "nsfw": False,
                         "original": True,
                         "animated": True,
                     },
@@ -224,7 +248,6 @@ class PackTestCase(TestCase):
                         "author": "Pack author 2",
                         "cover": {"id": 42},
                     },
-                    "status": "ONLINE",
                 },
                 {
                     "meta": {
@@ -233,17 +256,13 @@ class PackTestCase(TestCase):
                         "source": "Source 1 (via TestClient 1)",
                         "tags": ["bar1", "foo1", "foobar1"],
                         "nsfw": True,
-                        "original": False,
-                        "animated": False,
                     },
                     "manifest": {
                         "title": "Pack title 1",
                         "author": "Pack author 1",
                         "cover": {"id": 42},
                     },
-                    "status": "ONLINE",
                 },
             ],
-            response.data,
         )
 
