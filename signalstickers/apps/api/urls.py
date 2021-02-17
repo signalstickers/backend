@@ -8,5 +8,9 @@ urlpatterns = [
     path("packs/", PacksView.as_view(), name="packs"),
     path("contribute/", ContributionView.as_view(), name="contribute"),
     # Contribution request
-    path("contributionrequest/", ContributionRequestView.as_view()),
+    path(
+        "contributionrequest/",
+        ContributionRequestView.as_view(),
+        name="contributionrequest",
+    ),
 ]

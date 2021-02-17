@@ -1,11 +1,12 @@
 import logging
 from unittest.mock import patch
+from uuid import UUID
 
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
-from apps.api.models import BotPreventionQuestion
+from apps.api.models import BotPreventionQuestion, ContributionRequest
 from apps.api.services import new_contribution_request
 from apps.stickers.models import Pack, PackAnimatedMode, PackStatus
 from apps.stickers.services import new_pack
@@ -31,7 +32,25 @@ class ContributionTestCase(TestCase):
         q = BotPreventionQuestion(question="foo", answer="bar")
         q.save()
 
-    def test_propose_pack_(self, mocked_getpacklib):
+    def test_contribution_request(self, _):
+        """
+        API response for contributionrequest is correct
+        """
+        # Check response
+        response = self.client.post(reverse("contributionrequest"))
+        resp_contribution_id = response.data["contribution_id"]
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(resp_contribution_id, UUID))
+        self.assertEqual(response.data["contribution_question"], "foo")
+
+        # Check ContributionRequest obj
+        self.assertEqual(ContributionRequest.objects.count(), 1)
+        cr = ContributionRequest.objects.first()
+        self.assertEqual(cr.id, resp_contribution_id)
+        self.assertEqual(cr.client_ip, "127.0.0.1")
+        self.assertEqual(cr.question.question, "foo")
+
+    def test_propose_pack(self, mocked_getpacklib):
         """
         Valid Pack request
         """
