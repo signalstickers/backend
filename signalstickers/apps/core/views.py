@@ -11,14 +11,14 @@ from apps.stickers.models import Pack
 
 
 class AdminTriggerActionsView(View):
-    def get(self, request):
-        return render(
-            request,
-            "admin/trigger_actions.html",
-            context={"nb_not_tweeted": Pack.objects.not_twitteds().count()},
+    def get(self, request, admin_site):
+        context = dict(
+            admin_site.each_context(request),
+            nb_not_tweeted=Pack.objects.not_twitteds().count(),
         )
+        return render(request, "admin/trigger_actions.html", context=context)
 
-    def post(self, request):
+    def post(self, request, admin_site):
         if request.POST.get("action") == "cloudflareclear":
 
             success, output = invalidate_cdn()
@@ -52,8 +52,9 @@ class AdminTriggerActionsView(View):
                     ),
                 )
 
-        return render(
-            request,
-            "admin/trigger_actions.html",
-            context={"nb_not_tweeted": Pack.objects.not_twitteds().count()},
+        context = dict(
+            admin_site.each_context(request),
+            nb_not_tweeted=Pack.objects.not_twitteds().count(),
         )
+
+        return render(request, "admin/trigger_actions.html", context=context)

@@ -1,9 +1,21 @@
 {% extends "admin/base_site.html" %}
 
+{% load i18n static %}
+{% load admin_urls %}
 
 {% block title %}
 Trigger actions
 {% endblock %}
+
+
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+    &rsaquo; Trigger actions
+</div>
+{% endblock %}
+
 
 {% block content %}
 
@@ -36,4 +48,5 @@ Trigger actions
     <input type="submit" value="Tweet">
 </form>
 
+{{ block.super }}
 {% endblock %}

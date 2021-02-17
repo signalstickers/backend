@@ -1,6 +1,5 @@
 {% extends "admin/base.html" %}
 {% block welcome-msg %}
-
 {% if packs_to_review %}
 <style>
     .to-review {
@@ -16,5 +15,9 @@
     <span class="to-review">🔔 {{packs_to_review}} pack{{packs_to_review|pluralize:",s"}} to review</span>
 </a>
 {% endif %}
-<a href="/admin/trigger_actions/">Trigger actions</a> /
+
+{{ block.super }}
+
+<a href="https://signalstickers.com" target="_blank" rel="noopener">signalstickers.com</a> /
+
 {% endblock %}
