@@ -140,7 +140,7 @@ class ContributionTestCase(TestCase):
         contrib_req = new_contribution_request("127.0.0.1")
         contrib_req.request_date = "2019-12-21 13:47+00"
         contrib_req.save()
-        print(contrib_req.request_date)
+
         response = self.client.put(
             reverse("contribute"),
             {

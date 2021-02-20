@@ -3,7 +3,15 @@
 source =
     apps/
 
+branch = True
+
 omit =
     *__init__.py*
     */migrations/*
     *tests.py*
+    manage.py
+    */apps.py
+
+[report]
+skip_covered = True
+show_missing = True

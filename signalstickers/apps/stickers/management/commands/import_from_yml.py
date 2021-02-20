@@ -1,3 +1,5 @@
+from time import sleep
+
 from apps.stickers.models import Pack, PackStatus
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
@@ -29,20 +31,23 @@ class Command(BaseCommand):
                     tags=pack_data.get("tags", None),
                     tweeted=True,
                 )
-                nb_imported += 1
-                print("Imported: ", nb_imported, end="\r", flush=True)
 
-                if pack.animated_detected != pack_data.get("animated", False):
-                    print(
+                nb_imported += 1
+                self.stdout.write(f"\rImported: {nb_imported} ", ending="")
+
+                if pack.animated_detected != pack_data.get(
+                    "animated", False
+                ):  # pragma: no cover
+                    self.stdout.write(
                         f"Animated detection failed for pack {pack_id} (detected: {pack.animated_detected}, YML: {pack_data.get('animated', False)}). Using detection value."
                     )
 
             except IntegrityError:
-                print(f"Pack {pack_id} not imported (duplicate)")
+                self.stdout.write(f"Pack {pack_id} not imported (duplicate)")
 
             except ValidationError:
-                print(
+                self.stdout.write(
                     f"Pack {pack_id} not imported (invalid) (key: {pack_data['key']})"
                 )
 
-        print("\nAll done! Imported:", nb_imported)
+        self.stdout.write(f"\nAll done! Imported: {nb_imported}")

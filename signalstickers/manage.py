@@ -28,16 +28,24 @@ def main():
         import coverage
 
         cov = coverage.coverage()
-        cov.set_option("report:show_missing", True)
         cov.erase()
         cov.start()
 
     execute_from_command_line(sys.argv)
+
     if is_testing:
         print(f"\n\n{'='*30} Coverage {'='*30}\n")
         cov.stop()
         cov.save()
-        cov.report()
+        covered = cov.report()
+        min_cov_required = 70
+        if covered < min_cov_required:
+            print(
+                f"\nFAIL coverage should be at least {min_cov_required}%, got {covered:.1f}% "
+            )
+            sys.exit(1)
+        else:
+            print("OK")
 
 
 if __name__ == "__main__":
