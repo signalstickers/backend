@@ -13,7 +13,7 @@ class IndexView(View):
 
         pack_url = request.POST.get("packurl")
         pack_info = parse_qs(urlparse(pack_url).fragment)
-        # print(pack_info)
+
         try:
             pack = Pack.objects.get(
                 pack_id=pack_info["pack_id"][0], pack_key=pack_info["pack_key"][0]

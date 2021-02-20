@@ -1,7 +1,6 @@
 from apps.api.serializers import APIPackRequestSerializer, PackRequestSerializer
 from apps.api.services import check_api_key, check_contribution_request
-from apps.stickers.models import PackStatus
-from apps.stickers.services import new_pack
+from apps.stickers.models import Pack, PackStatus
 from django.core.exceptions import ValidationError
 from rest_framework import parsers, status
 from rest_framework.response import Response
@@ -59,7 +58,7 @@ class ContributionView(APIView):
 
             # Create pack in review
             try:
-                pack = new_pack(
+                pack = Pack.objects.new(
                     status=PackStatus.IN_REVIEW.name,
                     **req_srl.validated_data["pack"],
                     submitter_comments=req_srl.validated_data.get(

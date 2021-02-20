@@ -9,7 +9,6 @@ from rest_framework import status
 from apps.api.models import BotPreventionQuestion, ContributionRequest
 from apps.api.services import new_contribution_request
 from apps.stickers.models import Pack, PackAnimatedMode, PackStatus
-from apps.stickers.services import new_pack
 
 
 class TestSticker:
@@ -100,13 +99,11 @@ class ContributionTestCase(TestCase):
 
     def test_propose_pack_invalid_contributionrequest(self, mocked_getpacklib):
         """
-        Packs requests with invalid/expired contributionrequest should not be
+        Packs requests with invalid contributionrequest should not be
         accepted
         """
         logging.disable(logging.CRITICAL)
-        mocked_getpacklib.return_value = TestPack(
-            "Pack title 1", "Pack author 1", b"\x00"
-        )
+        mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
 
         response = self.client.put(
             reverse("contribute"),
@@ -119,11 +116,83 @@ class ContributionTestCase(TestCase):
                     "nsfw": True,
                     "original": False,
                 },
-                "contribution_id": "6c7ab3b4-59cf-423a-a5c6-a8987c0bafd5",  # invalid
+                "contribution_id": "11111111-2222-3333-4444-555555555555",  # invalid
                 "contribution_answer": "foobar",
                 "submitter_comments": "Thanks",
             },
             content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data, {"error": "- Invalid contribution request. Try again."}
+        )
+        self.assertEqual(list(Pack.objects.all()), [])
+
+    def test_propose_pack_expired_contributionrequest(self, mocked_getpacklib):
+        """
+        Packs requests with expired contributionrequest should not be
+        accepted
+        """
+        logging.disable(logging.CRITICAL)
+        mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
+
+        contrib_req = new_contribution_request("127.0.0.1")
+        contrib_req.request_date = "2019-12-21 13:47+00"
+        contrib_req.save()
+        print(contrib_req.request_date)
+        response = self.client.put(
+            reverse("contribute"),
+            {
+                "pack": {
+                    "pack_id": "a" * 32,
+                    "pack_key": "b" * 64,
+                    "source": "signalstickers.com",
+                    "tags": ["Foo", "Bar", "Foobar"],
+                    "nsfw": True,
+                    "original": False,
+                },
+                "contribution_id": contrib_req.id,
+                "contribution_answer": contrib_req.question.answer,
+                "submitter_comments": "Thanks",
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data, {"error": "- Expired contribution request. Try again."}
+        )
+        self.assertEqual(list(Pack.objects.all()), [])
+
+    def test_propose_pack_bad_ip_contributionrequest(self, mocked_getpacklib):
+        """
+        Packs requests with a ContributionRequest assigned to another IP
+        """
+        logging.disable(logging.CRITICAL)
+        mocked_getpacklib.return_value = TestPack(
+            "Pack title 1", "Pack author 1", b"\x00"
+        )
+
+        contrib_req = new_contribution_request("10.0.13.37")
+
+        response = self.client.put(
+            reverse("contribute"),
+            {
+                "pack": {
+                    "pack_id": "a" * 32,
+                    "pack_key": "b" * 64,
+                    "source": "signalstickers.com",
+                    "tags": ["Foo", "Bar", "Foobar"],
+                    "nsfw": True,
+                    "original": False,
+                },
+                "contribution_id": contrib_req.id,
+                "contribution_answer": contrib_req.question.answer,
+                "submitter_comments": "Thanks",
+            },
+            content_type="application/json",
+            REMOTE_ADDR="10.0.0.42",
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -172,7 +241,7 @@ class PackTestCase(TestCase):
             "Pack title 1", "Pack author 1", b"\x00"
         )
 
-        new_pack(
+        Pack.objects.new(
             pack_id="a" * 32,
             pack_key="b" * 64,
             status=PackStatus.ONLINE.name,
@@ -189,7 +258,7 @@ class PackTestCase(TestCase):
             "Pack title 2", "Pack author 2", b"\x61\x63\x54\x4C"
         )
 
-        new_pack(
+        Pack.objects.new(
             pack_id="c" * 32,
             pack_key="d" * 64,
             status=PackStatus.ONLINE.name,
@@ -205,7 +274,7 @@ class PackTestCase(TestCase):
         mocked_getpacklib.return_value = TestPack(
             "Pack title 2", "Pack author 2", b"\x00"
         )
-        new_pack(
+        Pack.objects.new(
             pack_id="e" * 32,
             pack_key="f" * 64,
             status=PackStatus.ONLINE.name,
@@ -218,7 +287,9 @@ class PackTestCase(TestCase):
         )
 
         # Status IN_REVIEW: should NOT be returned by the API
-        new_pack(pack_id="g" * 32, pack_key="h" * 64, status=PackStatus.IN_REVIEW.name)
+        Pack.objects.new(
+            pack_id="g" * 32, pack_key="h" * 64, status=PackStatus.IN_REVIEW.name
+        )
         response = self.client.get(reverse("packs"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -1,5 +1,4 @@
-from apps.stickers.models import PackStatus
-from apps.stickers.services import new_pack
+from apps.stickers.models import Pack, PackStatus
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
@@ -20,7 +19,7 @@ class Command(BaseCommand):
         for pack_id, pack_data in dict(reversed(list(data.items()))).items():
 
             try:
-                pack = new_pack(
+                pack = Pack.objects.new(
                     pack_id=pack_id,
                     pack_key=pack_data["key"],
                     source=pack_data.get("source", ""),

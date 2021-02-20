@@ -2,7 +2,11 @@ import anyio
 from signalstickers_client import StickersClient
 
 
-def get_pack_from_signal(pack_id, pack_key):
+def get_pack_from_signal(pack_id, pack_key):  # pragma: no cover
+    """
+    Simple async -> sync wrapper around StickersClient.
+    """
+
     async def _get_pack(pack_id, pack_key):
         async with StickersClient() as client:
             pack = await client.get_pack(pack_id, pack_key)

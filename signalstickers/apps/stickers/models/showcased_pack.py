@@ -12,5 +12,4 @@ class ShowcasedPack(models.Model):
         ordering = ["order"]
 
     def __str__(self):
-        # return self.pack.title
         return self.pack.title

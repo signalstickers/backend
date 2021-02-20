@@ -4,8 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from . import utils
-from .models import PackAnimatedMode, PackStatus
-from .services import new_pack
+from .models import Pack, PackAnimatedMode, PackStatus
 
 
 class TestSticker:
@@ -48,7 +47,7 @@ class PackTestCase(TestCase):
             self.testpack["title"], self.testpack["author"], b"\x00"
         )
 
-        pack = new_pack(
+        pack = Pack.objects.new(
             pack_id=self.testpack["pack_id"],
             pack_key=self.testpack["pack_key"],
             status=PackStatus.IN_REVIEW.name,
@@ -64,6 +63,7 @@ class PackTestCase(TestCase):
         self.assertEqual(pack.pack_id, self.testpack["pack_id"])
         self.assertEqual(pack.pack_key, self.testpack["pack_key"])
         self.assertEqual(pack.title, self.testpack["title"])
+        self.assertEqual(str(pack), self.testpack["title"])
         self.assertEqual(pack.author, self.testpack["author"])
         self.assertEqual(pack.id_cover, self.testpack["id_cover"])
         self.assertEqual(pack.source, self.testpack["source"])
@@ -87,7 +87,7 @@ class PackTestCase(TestCase):
             self.testpack["title"], self.testpack["author"], b"\x00"
         )
 
-        pack = new_pack(
+        pack = Pack.objects.new(
             pack_id=self.testpack["pack_id"],
             pack_key=self.testpack["pack_key"],
             status=PackStatus.IN_REVIEW.name,
@@ -110,21 +110,21 @@ class PackTestCase(TestCase):
         mocked_getpacklib.return_value = None
 
         with self.assertRaisesRegex(ValidationError, "Pack id must"):
-            new_pack(
+            Pack.objects.new(
                 pack_id="aaa",
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
             )
 
         with self.assertRaisesRegex(ValidationError, "Pack id must"):
-            new_pack(
+            Pack.objects.new(
                 pack_id="A" * 32,
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
             )
 
         with self.assertRaisesRegex(ValidationError, "Pack does not exists on Signal"):
-            new_pack(
+            Pack.objects.new(
                 pack_id="a" * 32,
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
@@ -138,21 +138,21 @@ class PackTestCase(TestCase):
         mocked_getpacklib.return_value = None
 
         with self.assertRaisesRegex(ValidationError, "Pack key must"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key="aaa",
                 status=PackStatus.IN_REVIEW.name,
             )
 
         with self.assertRaisesRegex(ValidationError, "Pack key must"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key="A" * 64,
                 status=PackStatus.IN_REVIEW.name,
             )
 
         with self.assertRaisesRegex(ValidationError, "Pack does not exists on Signal"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key="a" * 64,
                 status=PackStatus.IN_REVIEW.name,
@@ -163,10 +163,8 @@ class PackTestCase(TestCase):
         Validation of the pack title, author and source (format)
         """
 
-        mocked_getpacklib.return_value = None
-
         with self.assertRaisesRegex(ValidationError, "Source too long"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
@@ -176,7 +174,7 @@ class PackTestCase(TestCase):
         mocked_getpacklib.return_value = TestPack("a" * 200, "b", b"\x00")
 
         with self.assertRaisesRegex(ValidationError, "Pack title too long"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
@@ -185,26 +183,82 @@ class PackTestCase(TestCase):
         mocked_getpacklib.return_value = TestPack("a", "b" * 200, b"\x00")
 
         with self.assertRaisesRegex(ValidationError, "Author too long"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
             )
 
-    def test_validation_tags(self, mocked_getpacklib):
+    def test_validation_tags(self, _):
         """
         Validation of the pack source (format)
         """
 
-        mocked_getpacklib.return_value = None
-
         with self.assertRaisesRegex(ValidationError, "Too many tags"):
-            new_pack(
+            Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
                 tags=[str(i) for i in range(200)],
             )
+
+    def test_tweeted(self, mocked_getpacklib):
+        """
+        Check tweet status
+        """
+        mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
+
+        pack_not_tweeted = Pack.objects.new(
+            pack_id="a" * 32,
+            pack_key="b" * 64,
+            status=PackStatus.ONLINE.name,
+            tweeted=False,
+        )
+
+        pack_tweeted = Pack.objects.new(
+            pack_id="c" * 32,
+            pack_key="d" * 64,
+            status=PackStatus.ONLINE.name,
+            tweeted=True,
+        )
+
+        pack_not_tweeted_inreview = Pack.objects.new(
+            pack_id="e" * 32,
+            pack_key="f" * 64,
+            status=PackStatus.IN_REVIEW.name,
+            tweeted=False,
+        )
+
+        packs = Pack.objects.not_twitteds()
+
+        self.assertNotIn(pack_tweeted, packs)
+        self.assertNotIn(pack_not_tweeted_inreview, packs)
+        self.assertIn(pack_not_tweeted, packs)
+
+    def test_animation_mode(self, mocked_getpacklib):
+        """
+        Test animation mode (forced, auto)
+        """
+        mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
+
+        pack = Pack.objects.new(
+            pack_id="a" * 32, pack_key="b" * 64, status=PackStatus.ONLINE.name
+        )
+
+        self.assertFalse(pack.animated)
+        self.assertEqual(pack.animated_mode, PackAnimatedMode.AUTO.name)
+
+        # Force animated
+        pack.animated_mode = PackAnimatedMode.FORCE_ANIMATED.name
+        pack.clean()
+        pack.save()
+        self.assertTrue(pack.animated)
+
+        # Force still
+        pack.animated_mode = PackAnimatedMode.FORCE_STILL.name
+        pack.clean()
+        pack.save()
+        self.assertFalse(pack.animated)
 
 
 class UtilsTestCase(TestCase):
