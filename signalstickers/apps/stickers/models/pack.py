@@ -4,7 +4,7 @@ from base64 import b64encode
 from apps.stickers.utils import detect_animated_pack, get_pack_from_signal
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Prefetch, prefetch_related_objects
 
 from .pack_animated_mode import PackAnimatedMode
@@ -31,6 +31,60 @@ class PackManager(models.Manager):
         return Pack.objects.filter(
             status=PackStatus.ONLINE.name, tweeted=False
         ).order_by("-id")
+
+    def new(
+        self,
+        pack_id,
+        pack_key,
+        status,
+        source="",
+        nsfw=False,
+        original=False,
+        submitter_comments="",
+        tags=None,
+        api_via="",
+        tweeted=False,
+    ):
+        """
+        Create a new pack with validation and return it. Use this function
+        instead of create(), as this one also create related tags properly.
+        Return the pack which has been created. 
+        """
+
+        if api_via:
+            source = source.strip() + f" (via {api_via})"
+        else:
+            source = source.strip()
+
+        tags = tags or []
+        if len(tags) > 40:
+            raise ValidationError("Too many tags (max 40).")
+
+        pack = Pack(
+            pack_id=pack_id.strip(),
+            pack_key=pack_key.strip(),
+            source=source,
+            status=status,
+            nsfw=nsfw,
+            original=original,
+            submitter_comments=submitter_comments,
+            tweeted=tweeted,
+        )
+
+        pack.clean()
+
+        with transaction.atomic():
+            pack.save()
+
+            tags_obj_list = []
+            for tag in tags:
+                tag_obj, _ = Tag.objects.get_or_create(name=tag.lower())
+                tags_obj_list.append(tag_obj)
+
+            if tags_obj_list:
+                pack.tags.add(*tags_obj_list)
+
+        return pack
 
 
 class Pack(models.Model):
@@ -136,6 +190,7 @@ class Pack(models.Model):
         """
         Return a list of all stickers image data and their emoji. Used for
         viewing packs in the admin panel.
+        TODO cache the images
         """
         stickers = []  # contains dict {emoji, img}
         pack = get_pack_from_signal(self.pack_id, self.pack_key)
