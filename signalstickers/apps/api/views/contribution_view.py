@@ -35,9 +35,14 @@ class ContributionView(APIView):
                         errs_list.append("Invalid contribution request. Try again.")
                         continue
                     for err in err_list.values():
-                        errs_list.append(err[0])
+                        if err[0].startswith("pack with this pack id already exists"):
+                            errs_list.append(
+                                "This pack already exists, or has already been proposed (and is waiting for its approval)."
+                            )
+                        else:
+                            errs_list.append(err[0])
 
-                raise RuntimeError("\n- ".join(errs_list))
+                raise RuntimeError(", ".join(errs_list))
 
             if api_key:
                 # Check API key
@@ -73,6 +78,4 @@ class ContributionView(APIView):
             return Response({"success": bool(pack)})
 
         except RuntimeError as e:
-            return Response(
-                {"error": "- " + str(e)}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
