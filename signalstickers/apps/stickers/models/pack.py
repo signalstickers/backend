@@ -19,9 +19,11 @@ class PackManager(models.Manager):
         """
 
         return (
-            Pack.objects.filter(status=PackStatus.ONLINE.name)
-            .order_by("-id")
-            .prefetch_related("tags")
+            Pack.objects.filter(status=PackStatus.ONLINE.name).order_by("-id")
+            # .prefetch_related("tags")
+            .prefetch_related(
+                Prefetch("tags", queryset=Tag.objects.all().order_by("name"))
+            )[:500]
         )
 
     def not_twitteds(self):
@@ -46,9 +48,9 @@ class PackManager(models.Manager):
         tweeted=False,
     ):
         """
-        Create a new pack with validation and return it. Use this function
-        instead of create(), as this one also create related tags properly.
-        Return the pack which has been created. 
+        Create a new pack with validation, save it, and return it. Use this
+        function instead of create(), as this one also create related tags
+        properly. Return the pack which has been created. 
         """
 
         if api_via:
@@ -120,6 +122,7 @@ class Pack(models.Model):
     source = models.CharField(max_length=128, blank=True)
     nsfw = models.BooleanField(default=False, verbose_name="NSFW")
     original = models.BooleanField(default=False)
+    editorschoice = models.BooleanField("Editor's choice", default=False)
     tags = models.ManyToManyField("stickers.tag", blank=True, related_name="packs")
 
     # Animation

@@ -41,11 +41,12 @@ class PackAdmin(admin.ModelAdmin):
         "pack_key",
         "original",
         "nsfw",
+        "editorschoice",
         "animated",
         "_view",
     )
     search_fields = ("title", "pack_id", "pack_key", "tags__name")
-    list_filter = ("status", "original", "nsfw", "animated")
+    list_filter = ("status", "original", "nsfw", "animated", "editorschoice")
 
     #
     # Edit view
@@ -56,7 +57,10 @@ class PackAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Pack info", {"fields": ("pack_id", "pack_key", "title", "author")}),
-        ("Metadata", {"fields": ("source", "nsfw", "original", "tags")}),
+        (
+            "Metadata",
+            {"fields": ("source", "nsfw", "original", "tags", "editorschoice")},
+        ),
         ("Animation", {"fields": ("animated_detected", "animated_mode", "animated")}),
         (
             "Review",

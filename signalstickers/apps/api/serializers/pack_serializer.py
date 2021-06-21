@@ -15,7 +15,15 @@ class PackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pack
-        fields = ("pack_id", "pack_key", "source", "tags", "nsfw", "original")
+        fields = (
+            "pack_id",
+            "pack_key",
+            "source",
+            "tags",
+            "nsfw",
+            "original",
+            "editorschoice",
+        )
 
     def to_representation(self, obj):
 
@@ -29,6 +37,7 @@ class PackSerializer(serializers.ModelSerializer):
                     "nsfw": obj.nsfw,
                     "original": obj.original,
                     "animated": obj.animated,
+                    "editorschoice": obj.editorschoice,
                 },
                 "manifest": {
                     "title": obj.title,
