@@ -1,6 +1,7 @@
 from apps.api.serializers import APIPackRequestSerializer, PackRequestSerializer
 from apps.api.services import check_api_key, check_contribution_request
 from apps.stickers.models import Pack, PackStatus
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from rest_framework import parsers, status
 from rest_framework.response import Response
@@ -49,7 +50,7 @@ class ContributionView(APIView):
                 is_cont_req_valid, cont_req_errors = check_contribution_request(
                     req_srl.validated_data.get("contribution_id"),
                     req_srl.validated_data.get("contribution_answer"),
-                    request.META.get("REMOTE_ADDR"),
+                    request.META.get(settings.HEADER_IP),
                 )
                 if not is_cont_req_valid:
                     raise RuntimeError(str(cont_req_errors))
