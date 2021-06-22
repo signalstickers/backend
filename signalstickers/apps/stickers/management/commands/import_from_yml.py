@@ -21,6 +21,10 @@ class Command(BaseCommand):
         for pack_id, pack_data in dict(reversed(list(data.items()))).items():
 
             try:
+                tags = pack_data.get("tags", None)
+                if tags:
+                    tags = tags[:40]
+
                 pack = Pack.objects.new(
                     pack_id=pack_id,
                     pack_key=pack_data["key"],
@@ -28,7 +32,7 @@ class Command(BaseCommand):
                     status=PackStatus.ONLINE.name,
                     nsfw=pack_data.get("nsfw", False),
                     original=pack_data.get("original", False),
-                    tags=pack_data.get("tags", None),
+                    tags=tags,
                     tweeted=True,
                     editorschoice=data.get("editorschoice", False),
                 )
