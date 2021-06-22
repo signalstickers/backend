@@ -23,7 +23,7 @@ class PackManager(models.Manager):
             # .prefetch_related("tags")
             .prefetch_related(
                 Prefetch("tags", queryset=Tag.objects.all().order_by("name"))
-            )[:500]
+            )
         )
 
     def not_twitteds(self):
