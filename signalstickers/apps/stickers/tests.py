@@ -171,10 +171,10 @@ class PackTestCase(TestCase):
                 pack_id=self.testpack["pack_id"],
                 pack_key=self.testpack["pack_key"],
                 status=PackStatus.IN_REVIEW.name,
-                source="a" * 130,
+                source="a" * 300,
             )
 
-        mocked_getpacklib.return_value = TestPack("a" * 200, "b", b"\x00")
+        mocked_getpacklib.return_value = TestPack("a" * 300, "b", b"\x00")
 
         with self.assertRaisesRegex(ValidationError, "Pack title too long"):
             Pack.objects.new(
@@ -183,7 +183,7 @@ class PackTestCase(TestCase):
                 status=PackStatus.IN_REVIEW.name,
             )
 
-        mocked_getpacklib.return_value = TestPack("a", "b" * 200, b"\x00")
+        mocked_getpacklib.return_value = TestPack("a", "b" * 300, b"\x00")
 
         with self.assertRaisesRegex(ValidationError, "Author too long"):
             Pack.objects.new(
@@ -408,7 +408,5 @@ class YmlImportCommandTest(TestCase):
 
             call_command("import_from_yml", f_in.name, stdout=out)
 
-        self.assertIn(
-            f"Pack {'a'*32} not imported (invalid) (key: {'b'*64})", out.getvalue()
-        )
+        self.assertIn(f"Pack {'a'*32} not imported (key: {'b'*64})", out.getvalue())
 

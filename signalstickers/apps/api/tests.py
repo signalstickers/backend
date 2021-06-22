@@ -125,7 +125,7 @@ class ContributionTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data, {"error": "- Invalid contribution request. Try again."}
+            response.data, {"error": "Invalid contribution request. Try again."}
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
@@ -161,7 +161,7 @@ class ContributionTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data, {"error": "- Expired contribution request. Try again."}
+            response.data, {"error": "Expired contribution request. Try again."}
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
@@ -197,7 +197,7 @@ class ContributionTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data, {"error": "- Invalid contribution request. Try again."}
+            response.data, {"error": "Invalid contribution request. Try again."}
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
