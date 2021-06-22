@@ -21,7 +21,7 @@ from django.contrib.admin import AdminSite
 from django.urls import include, path
 
 urlpatterns = [
-    path("api/", include("apps.api.urls")),
+    path("v1/", include("apps.api.urls")),
     path("", include("apps.stickers.urls")),
     path(settings.ADMIN_URL, admin.site.urls),
     path("__debug__/", include(debug_toolbar.urls)),
