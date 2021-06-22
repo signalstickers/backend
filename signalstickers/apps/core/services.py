@@ -58,7 +58,7 @@ def invalidate_cdn():
 
         url = f'https://api.cloudflare.com/client/v4/zones/{settings.CLOUDFLARE_CONF["zone_id"]}/purge_cache'
         headers = {"Authorization": f'Bearer {settings.CLOUDFLARE_CONF["token"]}'}
-        data = {"files": settings.CLOUDFLARE_CONF["files"]}
+        data = {"purge_everything": True}
 
         resp = requests.post(url, json=data, headers=headers)
 
