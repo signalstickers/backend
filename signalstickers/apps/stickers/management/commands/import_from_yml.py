@@ -30,6 +30,7 @@ class Command(BaseCommand):
                     original=pack_data.get("original", False),
                     tags=pack_data.get("tags", None),
                     tweeted=True,
+                    editorschoice=data.get("editorschoice", False),
                 )
 
                 nb_imported += 1
@@ -45,9 +46,9 @@ class Command(BaseCommand):
             except IntegrityError:
                 self.stdout.write(f"Pack {pack_id} not imported (duplicate)")
 
-            except ValidationError:
+            except ValidationError as e:
                 self.stdout.write(
-                    f"Pack {pack_id} not imported (invalid) (key: {pack_data['key']})"
+                    f"Pack {pack_id} not imported (key: {pack_data['key']}): {e}"
                 )
 
         self.stdout.write(f"\nAll done! Imported: {nb_imported}")

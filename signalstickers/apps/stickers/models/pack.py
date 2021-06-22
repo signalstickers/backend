@@ -46,6 +46,7 @@ class PackManager(models.Manager):
         tags=None,
         api_via="",
         tweeted=False,
+        editorschoice=False,
     ):
         """
         Create a new pack with validation, save it, and return it. Use this
@@ -71,6 +72,7 @@ class PackManager(models.Manager):
             original=original,
             submitter_comments=submitter_comments,
             tweeted=tweeted,
+            editorschoice=editorschoice,
         )
 
         pack.clean()
@@ -114,12 +116,12 @@ class Pack(models.Model):
             )
         ],
     )
-    title = models.CharField(max_length=128)  # computed
-    author = models.CharField(max_length=128)  # computed
+    title = models.CharField(max_length=256)  # computed
+    author = models.CharField(max_length=256)  # computed
     id_cover = models.IntegerField(default=0)
 
     # Metadata
-    source = models.CharField(max_length=128, blank=True)
+    source = models.CharField(max_length=256, blank=True)
     nsfw = models.BooleanField(default=False, verbose_name="NSFW")
     original = models.BooleanField(default=False)
     editorschoice = models.BooleanField("Editor's choice", default=False)
@@ -161,7 +163,7 @@ class Pack(models.Model):
         if not re.match(r"^[a-z0-9]{64}$", self.pack_key):
             raise ValidationError("Pack key must be 64, lowercase and numbers.")
 
-        if len(self.source) > 128:
+        if len(self.source) > 256:
             raise ValidationError("Source too long.")
 
         # Pack verification
@@ -173,10 +175,10 @@ class Pack(models.Model):
         self.author = pack.author
         self.id_cover = pack.cover.id
 
-        if len(self.title) > 128:
+        if len(self.title) > 256:
             raise ValidationError("Pack title too long.")
 
-        if len(self.author) > 128:
+        if len(self.author) > 256:
             raise ValidationError("Author too long.")
 
         # Animation
