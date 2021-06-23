@@ -11,7 +11,7 @@ from apps.api.views import (
 urlpatterns = [
     # Packs
     path("packs/", PacksView.as_view(), name="packs"),
-    path("packs/status", StatusView.as_view(), name="packstatus"),
+    path("packs/status/", StatusView.as_view(), name="packstatus"),
     path("contribute/", ContributionView.as_view(), name="contribute"),
     # Contribution request
     path(
