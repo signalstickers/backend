@@ -29,7 +29,6 @@ class IndexView(View):
                     "pack_id": pack.pack_id,
                 },
             )
-
         except:
             return render(
                 request, "check_pack.html", {"error": "No pack found.", "url": pack_url}
