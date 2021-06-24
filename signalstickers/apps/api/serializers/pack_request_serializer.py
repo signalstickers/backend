@@ -14,5 +14,4 @@ class PackRequestSerializer(serializers.Serializer):
 
 class APIPackRequestSerializer(serializers.Serializer):
     pack = PackSerializer()
-    contribution_id = serializers.UUIDField(format="hex_verbose", required=False)
-    contribution_answer = serializers.CharField(max_length=200, required=False)
+

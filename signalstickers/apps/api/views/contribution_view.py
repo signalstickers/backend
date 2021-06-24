@@ -8,6 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
+class ApiException(Exception):
+    def __init__(self, message, status=status.HTTP_400_BAD_REQUEST):
+        super().__init__(message)
+        self.status = status
+
+
 class ContributionView(APIView):
     parser_classes = (parsers.JSONParser,)
 
@@ -19,7 +25,15 @@ class ContributionView(APIView):
             api_key = request.headers.get("X-Auth-Token")
 
             if api_key:
+                api_obj = check_api_key(api_key)
+                if not api_obj:
+                    raise ApiException(
+                        "Bad API key", status=status.HTTP_401_UNAUTHORIZED
+                    )
+
+                api_via = api_obj.name
                 req_srl = APIPackRequestSerializer(data=request.data)
+
             else:
                 req_srl = PackRequestSerializer(data=request.data)
 
@@ -42,15 +56,9 @@ class ContributionView(APIView):
                         else:
                             errs_list.append(err[0])
 
-                raise RuntimeError(", ".join(errs_list))
+                raise ApiException(", ".join(errs_list))
 
-            if api_key:
-                # Check API key
-                api_obj = check_api_key(api_key)
-                if not api_obj:
-                    raise RuntimeError("Bad API key")
-                api_via = api_obj.name
-            else:
+            if not api_key:
                 # Check contribution request
                 is_cont_req_valid, cont_req_errors = check_contribution_request(
                     req_srl.validated_data.get("contribution_id"),
@@ -58,7 +66,7 @@ class ContributionView(APIView):
                     request.META.get(settings.HEADER_IP),
                 )
                 if not is_cont_req_valid:
-                    raise RuntimeError(str(cont_req_errors))
+                    raise ApiException(str(cont_req_errors))
 
                 api_via = ""
 
@@ -73,9 +81,9 @@ class ContributionView(APIView):
                     api_via=api_via,
                 )
             except ValidationError as val_err:
-                raise RuntimeError(val_err.message)
+                raise ApiException(str(val_err))
 
             return Response({"success": bool(pack)})
 
-        except RuntimeError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ApiException as api_err:
+            return Response({"error": str(api_err)}, status=api_err.status)
