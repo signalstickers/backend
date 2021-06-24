@@ -17,12 +17,10 @@ import debug_toolbar
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.admin import AdminSite
 from django.urls import include, path
 
 urlpatterns = [
     path("v1/", include("apps.api.urls")),
-    path("", include("apps.stickers.urls")),
     path(settings.ADMIN_URL, admin.site.urls),
     path("__debug__/", include(debug_toolbar.urls)),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
