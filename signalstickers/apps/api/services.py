@@ -25,10 +25,11 @@ def check_contribution_request(contribution_id, client_answer, client_ip):
         return False, "Invalid contribution request. Try again."
 
     if cont_req.request_date + datetime.timedelta(hours=1) < now():
+        cont_req.delete()
         return False, "Expired contribution request. Try again."
 
-    correct_answer = re.sub(r"[^a-z]", "", cont_req.question.answer.strip().lower())
-    client_answer = re.sub(r"[^a-z]", "", client_answer.strip().lower())
+    correct_answer = re.sub(r"[^a-z0-9]", "", cont_req.question.answer.strip().lower())
+    client_answer = re.sub(r"[^a-z0-9]", "", client_answer.strip().lower())
 
     if correct_answer == client_answer:
         cont_req.delete()
