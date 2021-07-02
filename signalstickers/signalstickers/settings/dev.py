@@ -15,8 +15,16 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 ADMIN_URL = "admin/"
 
+
 DATABASES = {
-    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "django",
+        "USER": "django",
+        "PASSWORD": "this_password_is_for_dev_only_NOT_FOR_PROD",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+    }
 }
 
 
@@ -44,5 +52,5 @@ TWITTER_CONF = {
 
 HEADER_IP = "REMOTE_ADDR"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_FROM = "\"Signalstickers\" <Signalstickers@example.com>"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_FROM = '"Signalstickers" <Signalstickers@example.com>'
