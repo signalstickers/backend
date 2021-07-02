@@ -11,6 +11,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'admin/admin.css' %}">
 
 <h1>Stickers preview</h1>
+<a href="https://signalstickers.com/pack/{{ original.pack_id }}?key={{ original.pack_key }}">Preview</a>
+
 {% if original.nsfw %}
 <div class="pack-nsfw">
    🔞 This pack is NSFW. You've been warned. 🔞
