@@ -5,7 +5,7 @@ from apps.stickers.utils import detect_animated_pack, get_pack_from_signal
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models, transaction
-from django.db.models import Prefetch, prefetch_related_objects
+from django.db.models import Prefetch
 
 from .pack_animated_mode import PackAnimatedMode
 from .pack_status import PackStatus

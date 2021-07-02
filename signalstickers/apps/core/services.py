@@ -2,11 +2,13 @@ import logging
 import time
 
 import requests
-from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.mail import EmailMessage
 from libs.twitter_bot import tweet_pack
 
 from apps.api.models import ContributionRequest
 from apps.stickers.models import Pack
+from django.conf import settings
 
 logger = logging.getLogger("main")
 
@@ -71,3 +73,29 @@ def invalidate_cdn():
         return False, str(e)
 
     return True, resp.text
+
+
+def send_email_on_pack_propose(pack):
+    """
+    Send an email to the reviewers (== users in group `email_notification_on_propose`)
+    """
+    recipients = User.objects.filter(groups__name="email_notification_on_propose").values_list("email", flat=True)
+    message = f"""\
+Hello! 👋
+
+A new pack was proposed!
+
+{pack.title}, by {pack.author}
+
+Comment:
+{pack.submitter_comments or "N/A"}
+"""
+    email = EmailMessage(
+        f"Propose: {pack.title}",
+        message,
+        settings.EMAIL_FROM,
+        [],  # to
+        list(recipients),  # bcc
+    )
+
+    email.send(fail_silently=True)
