@@ -62,5 +62,13 @@ SESSION_COOKIE_SECURE = True
 
 HEADER_IP = "HTTP_FOOBAR"
 
+EMAIL_HOST = "FIXME"
+EMAIL_PORT = 465
+EMAIL_HOST_USER = "FIXME"
+EMAIL_FROM = "\"Signalstickers\" <Signalstickers@example.com>"
+EMAIL_HOST_PASSWORD = "FIXME"
+EMAIL_USE_SSL = True
+EMAIL_TIMEOUT = 5
+
 if SECRET_KEY == "FIXME" or DEBUG == True :
     exit("Error: set appropriate prod values in settings/prod.py")

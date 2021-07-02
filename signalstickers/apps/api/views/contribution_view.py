@@ -1,5 +1,6 @@
 from apps.api.serializers import APIPackRequestSerializer, PackRequestSerializer
 from apps.api.services import check_api_key, check_contribution_request
+from apps.core.services import send_email_on_pack_propose
 from apps.stickers.models import Pack, PackStatus
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -83,6 +84,7 @@ class ContributionView(APIView):
             except ValidationError as val_err:
                 raise ApiException(str(val_err))
 
+            send_email_on_pack_propose(pack)
             return Response({"success": bool(pack)})
 
         except ApiException as api_err:

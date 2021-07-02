@@ -43,3 +43,6 @@ TWITTER_CONF = {
 }
 
 HEADER_IP = "REMOTE_ADDR"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_FROM = "\"Signalstickers\" <Signalstickers@example.com>"
