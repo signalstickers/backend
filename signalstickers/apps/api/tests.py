@@ -2,6 +2,7 @@ import logging
 from unittest.mock import patch
 from uuid import UUID
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -336,4 +337,11 @@ class PackTestCase(TestCase):
                 },
             ],
         )
+
+
+class BotPreventionQuestionTestCase(TestCase):
+    def test_answer_regex_validation(self):
+        # The BotPreventionQuestion's answer should match the regex ^[a-zA-Z0-9]+$, a ValidationError is raised if not.
+        with self.assertRaises(ValidationError):
+            BotPreventionQuestion.answer.field.run_validators(value="foo+bar")
 
