@@ -1,5 +1,10 @@
+from urllib.parse import parse_qsl
+
 from core.models import Pack, PackStatus
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m, unquote
+from django.db.models import Model
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
@@ -92,3 +97,41 @@ class PackAdmin(admin.ModelAdmin):
             }
         )
         return super().get_form(request, obj, **kwargs)
+
+    actions = ["approve"]
+
+    def approve(self, request, queryset):
+        if isinstance(queryset, Model):
+            obj = queryset
+            obj.status = PackStatus.ONLINE.name
+            obj.save()
+            updated_count = 1
+        else:
+            updated_count = queryset.update(status=PackStatus.ONLINE.name)
+
+        msg = f"Marked {updated_count} packs as online"
+        self.message_user(request, msg, messages.SUCCESS)
+
+    approve.short_description = "Change selected packs status to online"
+
+    @csrf_protect_m
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        if request.method == "POST" and "_approve" in request.POST:
+            obj = self.get_object(request, unquote(object_id))
+            self.approve(request, obj)
+            url = reverse("admin:core_pack_changelist")
+            if request.GET.get("_changelist_filters"):
+                query_params = dict(parse_qsl(request.GET["_changelist_filters"]))
+                params = list()
+                for key, value in query_params.items():
+                    params.append(f"{key}={value}")
+                url = f"{reverse('admin:core_pack_changelist')}?{'&'.join(params)}"
+            return HttpResponseRedirect(url)
+
+        return admin.ModelAdmin.changeform_view(
+            self,
+            request,
+            object_id=object_id,
+            form_url=form_url,
+            extra_context=extra_context,
+        )
