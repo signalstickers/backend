@@ -55,13 +55,14 @@ sudo docker-compose up --force-recreate -d  # Rebuild the containers and start t
 
 ## Initializing a dev env
 
-1. Create an admin account: `./signalstickers/manage.py createsuperuser`
+1. Create an admin account: `./signalstickers/manage.py createsuperuser` ;
 2. Import some stickers: copy/paste some stickers from the [old YML
    format](https://github.com/signalstickers/stickers/blob/master/src/stickers.yml),
    save them in a file, and import them: `./signalstickers/manage.py
    import_from_yml path/to/file.yml` . We recommend that you import only ~20, as
-   this process is slow.
-
+   this process is slow;
+3. Start the dev server with `./signalstickers/manage.py runserver` ;
+4. Navigate to `http://localhost:<PORT>/admin` and log in.
 
 ## Production
 
