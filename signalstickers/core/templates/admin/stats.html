@@ -92,12 +92,18 @@ Homepage hits this month: {{homepage_this_month|intcomma}} (Mean {{all_times_mea
                         },
                     }
                 }
+            },
+            scales: {
+                x: {
+                    min: visitsValues.length - 6 // last 6 months shown by default
+                }
+
             }
         }
     });
 
 </script>
-<small class="help">Note that stats are not perfectly accurate before 07/2021.</small>
+<small class="help">Zoom out to show all the stats. Note that stats are not perfectly accurate before 07/2021.</small>
 <br />
 <br />
 <h1>Stats</h1>
