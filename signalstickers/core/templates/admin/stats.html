@@ -55,7 +55,7 @@ Homepage hits this month: {{homepage_this_month|intcomma}} (Mean {{all_times_mea
     const visitsValues = labels.map(label => orderedVisitsPacks[label]);
 
 
-    new Chart(document.getElementById("visitsChart"), {
+    new Chart(document.getElementById("visitsChart").getContext('2d'), {
         type: 'line',
         data: {
             labels: labels,
@@ -78,6 +78,20 @@ Homepage hits this month: {{homepage_this_month|intcomma}} (Mean {{all_times_mea
         options: {
             title: {
                 display: false,
+            },
+            plugins: {
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x'
+                    },
+                    zoom: {
+                        mode: 'x',
+                        wheel: {
+                            enabled: true,
+                        },
+                    }
+                }
             }
         }
     });
