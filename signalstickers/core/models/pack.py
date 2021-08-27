@@ -282,3 +282,6 @@ class Pack(models.Model):
             )
 
         return stickers
+
+    def get_model_name(self):
+        return self._meta.model_name

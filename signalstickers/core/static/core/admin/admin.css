@@ -73,6 +73,9 @@
     margin-right: 10px;
 }
 
+#save_and_approve_btn{
+    background-color: forestgreen;
+}
 
 @media only screen and (max-width: 930px)  {
     .stats-col{

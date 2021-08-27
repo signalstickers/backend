@@ -1,0 +1,10 @@
+{% extends "admin/submit_line.html" %}
+
+{% block submit-row %}
+{{ block.super }}
+
+{% if original.get_model_name == 'pack'%}
+    <input type="submit" value="Approve and save" name="_approve" id="save_and_approve_btn">
+{% endif %}
+
+{% endblock %}
