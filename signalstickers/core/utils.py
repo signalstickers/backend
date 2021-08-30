@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from urllib.parse import urlparse
 
 import anyio
 from django.core.exceptions import ValidationError
@@ -53,3 +54,11 @@ def detect_animated_pack(lib_pack):
                 "Animated WebP are invalid; this pack can not be added."
             )
     return False
+
+
+def is_url(str_in):
+    try:
+        result = urlparse(str_in)
+        return all([result.scheme, result.netloc])
+    except:  # pylint: disable=bare-except
+        return False
