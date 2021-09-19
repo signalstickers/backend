@@ -117,8 +117,13 @@ class PackAdmin(admin.ModelAdmin):
     @csrf_protect_m
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if request.method == "POST" and "_approve" in request.POST:
+            super().changeform_view(
+                request, object_id, form_url, extra_context=extra_context
+            )
             obj = self.get_object(request, unquote(object_id))
             self.approve(request, obj)
+            # Once the pack is saved and status changed to approved
+            # redirect to previous page with correct url params
             url = reverse("admin:core_pack_changelist")
             if request.GET.get("_changelist_filters"):
                 query_params = dict(parse_qsl(request.GET["_changelist_filters"]))
