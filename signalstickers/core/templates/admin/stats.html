@@ -55,6 +55,28 @@ Homepage hits this month: {{homepage_this_month|intcomma}} (Mean {{all_times_mea
     const visitsValues = labels.map(label => orderedVisitsPacks[label]);
 
 
+    function getPrevision(label, dataList, labels) {
+        if (label === labels.at(-1)) {
+            const dt = new Date();
+            const month = dt.getMonth();
+            const year = dt.getFullYear();
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            const day = dt.getDate();
+            const visitsPerDay = dataList[label] / day
+            return Math.ceil(visitsPerDay * daysInMonth)
+        }
+        if (label === labels.at(-2)) {
+            // so we have a line, and not only a dot
+            return dataList[label]
+        }
+        return null
+    }
+
+    let previsionVisits = labels.map((label) => getPrevision(label, orderedVisitsPacks, labels));
+    let previsionPackViews = labels.map((label) => getPrevision(label, orderedStatsPacks, labels));
+
+
     new Chart(document.getElementById("visitsChart").getContext('2d'), {
         type: 'line',
         data: {
@@ -67,12 +89,29 @@ Homepage hits this month: {{homepage_this_month|intcomma}} (Mean {{all_times_mea
                 pointHitRadius: 10,
                 tension: 0.3
             }, {
+                label: "Pack views (prev)",
+                data: orderedStatsPacks,
+                borderColor: "#a9d0e9",
+                fill: false,
+                pointHitRadius: 10,
+                tension: 0.3,
+                borderDash: [10, 5]
+            }, {
                 label: "Homepage hits",
                 data: visitsValues,
                 borderColor: "#ff0000",
                 fill: false,
                 pointHitRadius: 10,
                 tension: 0.3
+            }, {
+                label: "Homepage hits (prev)",
+                data: previsionVisits,
+                borderColor: "#ff8e8e",
+                fill: false,
+                pointHitRadius: 10,
+                tension: 0.3,
+                borderDash: [10, 5]
+
             }]
         },
         options: {
