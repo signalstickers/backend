@@ -28,7 +28,10 @@ Trigger actions
 <form method="POST">
     {% csrf_token %}
     <input type="hidden" name="action" value="cloudflareclear_and_tweet">
-    <input type="submit" value="Clear caches + tweet">
+    <div class="loading-group">
+        <input class="test" type="submit" value="Clear caches + tweet">
+        <div></div>
+    </div>
 </form>
 
 <br />
@@ -44,7 +47,10 @@ Trigger actions
 <form method="POST">
     {% csrf_token %}
     <input type="hidden" name="action" value="cloudflareclear">
-    <input type="submit" value="Clear Cloudflare caches">
+    <div class="loading-group">
+        <input type="submit" value="Clear Cloudflare caches">
+        <div></div>
+    </div>
 </form>
 
 <br />
@@ -60,8 +66,24 @@ Trigger actions
 <form method="POST">
     {% csrf_token %}
     <input type="hidden" name="action" value="tweet">
-    <input type="submit" value="Tweet">
+    <div class="loading-group">
+        <input type="submit" value="Tweet">
+        <div></div>
+    </div>
 </form>
 
 {{ block.super }}
+
+<script>
+
+    let submitInputs = document.querySelectorAll("input[type=submit]");
+    // Add a click event on each submit input
+    for (let i = 0; i < submitInputs.length; i++) {
+        submitInputs[i].addEventListener("click", (e) => {
+            let nextDiv = e.target.nextElementSibling;
+            nextDiv.className = "loading";
+        });
+    }
+
+</script>
 {% endblock %}
