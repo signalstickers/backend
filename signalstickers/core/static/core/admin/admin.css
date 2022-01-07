@@ -73,8 +73,11 @@
     margin-right: 10px;
 }
 
-#save_and_approve_btn{
+#save_approve_btn, #approve_continue_btn{
     background-color: forestgreen;
+}
+#refuse_continue_btn, #refuse_approve_btn{
+    background-color: var(--delete-button-bg);
 }
 
 @media only screen and (max-width: 930px)  {

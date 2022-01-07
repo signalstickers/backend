@@ -401,6 +401,30 @@ class PackTestCase(TestCase):
             {"2020_08": 8, "2020_09": 3, "2021_01": 4, get_current_ym_date(): 6},
         )
 
+    def test_change_status_auto(self, mocked_getpacklib):
+        mocked_getpacklib.return_value = TestPack(
+            self.testpack["title"], self.testpack["author"], b"\x00"
+        )
+
+        pack = Pack.objects.new(
+            pack_id=self.testpack["pack_id"],
+            pack_key=self.testpack["pack_key"],
+            status=PackStatus.IN_REVIEW.name,
+            source=self.testpack["source"],
+            nsfw=self.testpack["nsfw"],
+            original=self.testpack["original"],
+            submitter_comments=self.testpack["submitter_comments"],
+            tags=self.testpack["tags"],
+            api_via="",
+            tweeted=False,
+        )
+
+        pack.approve()
+        self.assertEqual(pack.status, PackStatus.ONLINE.name)
+
+        pack.refuse()
+        self.assertEqual(pack.status, PackStatus.REFUSED.name)
+
 
 class UtilsTestCase(TestCase):
     def test_detect_animated_pack(self):

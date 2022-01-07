@@ -129,7 +129,7 @@ class PackPreview:
             plus_text = ImageDraw.Draw(image)
             plus_text.text(
                 (4 * self.sticker_width + 20, self.line_height + 65),
-                "+ {}".format(self.nb_stickers - 9),
+                f"+ {self.nb_stickers - 9}",
                 font=open_sans,
                 fill=(180, 180, 180),
             )
@@ -222,9 +222,9 @@ def tweet_pack(django_pack):
 
     tags_list = [tag.name for tag in django_pack.tags.all()[:10]]
 
-    tags = "🏷️ Tags: {}\n".format(", ".join(tags_list)) if tags_list else ""
+    tags = f"🏷️ Tags: {', '.join(tags_list)}\n" if tags_list else ""
 
-    source = "🔎 Source: {}\n".format(django_pack.source) if django_pack.source else ""
+    source = f"🔎 Source: {django_pack.source}\n" if django_pack.source else ""
 
     more_info_text = f"{tags}{source}ℹ️ Direct link: https://signal.art/addstickers/#pack_id={pack_sst_cli.id}&pack_key={pack_sst_cli.key}"
 

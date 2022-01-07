@@ -28,8 +28,8 @@ def query_twitter():
             )
             try:
                 pack_id, pack_key = url_re.groups()
-                source_url = "https://twitter.com/{user}/status/{tw_id}".format(
-                    user=tweet.author.screen_name, tw_id=tweet.id
+                source_url = (
+                    f"https://twitter.com/{tweet.author.screen_name}/status/{tweet.id}"
                 )
                 signalart_urls.add((pack_id, pack_key, source_url))
             except AttributeError:

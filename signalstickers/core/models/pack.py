@@ -30,6 +30,12 @@ class PackManager(models.Manager):
             )
         )
 
+    def in_review_count(self):
+        """
+        Return packs count with status "IN REVIEW".
+        """
+        return Pack.objects.filter(status="IN_REVIEW").count()
+
     def not_twitteds(self):
         """
         Return pack that have not been tweeted
@@ -285,3 +291,11 @@ class Pack(models.Model):
 
     def get_model_name(self):
         return self._meta.model_name
+
+    def approve(self):
+        self.status = PackStatus.ONLINE.name
+        self.save()
+
+    def refuse(self):
+        self.status = PackStatus.REFUSED.name
+        self.save()
