@@ -6,6 +6,8 @@ disable=
     no-self-use,
     abstract-method,
     line-too-long,
+    no-member,
+    E1101,
     too-many-instance-attributes,
     too-few-public-methods,
     signature-differs,
