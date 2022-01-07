@@ -1,10 +1,21 @@
 {% extends "admin/submit_line.html" %}
 
 {% block submit-row %}
-{{ block.super }}
 
-{% if original.get_model_name == 'pack'%}
-    <input type="submit" value="Approve and save" name="_approve" id="save_and_approve_btn">
+{% if not bulk_pack_ids %}
+    {{ block.super }}
+{% endif %}
+
+{% if original.get_model_name == 'pack' %}
+    {% if not bulk_pack_ids %}
+        <input type="submit" value="Approve and save" name="_approve" id="save_approve_btn">
+        <input type="submit" value="Refuse and save" name="_refuse" id="refuse_approve_btn">
+    {% else %}
+        <input type="hidden" value="{{ bulk_pack_ids }}" name="_bulkreview_next">
+        <input type="submit" value="Approve and continue" name="_approve_continue" id="approve_continue_btn">
+        <input type="submit" value="Refuse and continue" name="_refuse_continue" id="refuse_continue_btn">
+        <input type="submit" value="Save and continue" name="_save_continue" id="save_continue_btn">
+    {% endif %}
 {% endif %}
 
 {% endblock %}

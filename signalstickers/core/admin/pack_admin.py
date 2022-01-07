@@ -1,9 +1,9 @@
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, urlencode
 
 from core.models import Pack, PackStatus
-from django.contrib import admin, messages
+from django.contrib import admin
 from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m, unquote
-from django.db.models import Model
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -79,6 +79,19 @@ class PackAdmin(admin.ModelAdmin):
         "animated",
         "submitter_comments",
     )
+    actions = ("bulk_review_packs",)
+
+    @staticmethod
+    def _redirect_after_review(request):
+        remaining_packs = Pack.objects.in_review_count()
+        url = reverse("admin:core_pack_changelist")
+        if remaining_packs and request.GET.get("_changelist_filters"):
+            query_params = dict(parse_qsl(request.GET["_changelist_filters"]))
+            params = []
+            for key, value in query_params.items():
+                params.append(f"{key}={value}")
+            url = f"{reverse('admin:core_pack_changelist')}?{'&'.join(params)}"
+        return HttpResponseRedirect(url)
 
     # Add help texts for some fields
     def get_form(self, request, obj=None, **kwargs):  # pylint: disable=arguments-differ
@@ -98,40 +111,90 @@ class PackAdmin(admin.ModelAdmin):
         )
         return super().get_form(request, obj, **kwargs)
 
-    actions = ["approve"]
+    # customs actions
+    @admin.action(description="Start a bulk review session")
+    def bulk_review_packs(self, request, queryset):
+        # Add the next pack ids to the GET parameters
+        ordered_queryset = queryset.order_by("id")
+        object_id = str(ordered_queryset.first().id)
+        pack_ids = [
+            str(pack_id) for pack_id in ordered_queryset.values_list("id", flat=True)
+        ]
+        pack_ids.remove(object_id)  # remove current object from the list
 
-    def approve(self, request, queryset):
-        if isinstance(queryset, Model):
-            obj = queryset
-            obj.status = PackStatus.ONLINE.name
-            obj.save()
-            updated_count = 1
-        else:
-            updated_count = queryset.update(status=PackStatus.ONLINE.name)
+        # create the GET parameters
+        params_dict = {
+            "_changelist_filters": urlencode(request.GET),
+            "_bulkreview_next": ",".join(pack_ids),
+        }
+        params = urlencode(params_dict)
 
-        msg = f"Marked {updated_count} packs as online"
-        self.message_user(request, msg, messages.SUCCESS)
-
-    approve.short_description = "Change selected packs status to online"
+        return redirect(
+            reverse("admin:core_pack_change", kwargs={"object_id": object_id})
+            + f"?{params}"
+        )
 
     @csrf_protect_m
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        if request.method == "POST" and "_approve" in request.POST:
+        # Classic pack we need to approve automatically
+        if request.method == "POST" and any(
+            key in ["_approve", "_refuse"] for key in request.POST.keys()
+        ):
+            # Save all fields
             super().changeform_view(
                 request, object_id, form_url, extra_context=extra_context
             )
-            obj = self.get_object(request, unquote(object_id))
-            self.approve(request, obj)
+            pack = self.get_object(request, unquote(object_id))
+            if "_approve" in request.POST:
+                pack.approve()
+            elif "_refuse" in request.POST:
+                pack.refuse()
+
             # Once the pack is saved and status changed to approved
             # redirect to previous page with correct url params
-            url = reverse("admin:core_pack_changelist")
-            if request.GET.get("_changelist_filters"):
-                query_params = dict(parse_qsl(request.GET["_changelist_filters"]))
-                params = list()
-                for key, value in query_params.items():
-                    params.append(f"{key}={value}")
-                url = f"{reverse('admin:core_pack_changelist')}?{'&'.join(params)}"
-            return HttpResponseRedirect(url)
+            return self._redirect_after_review(request)
+
+        # Bulk session : we want to do something but redirect to the next pack afterwards
+        if request.method == "POST" and any(
+            "_continue" in key for key in request.POST.keys()
+        ):
+            # Save all fields
+            super().changeform_view(
+                request, object_id, form_url, extra_context=extra_context
+            )
+            # Perform the wanted action on the current pack
+            pack = self.get_object(request, unquote(object_id))
+            if "_approve_continue" in request.POST:
+                pack.approve()
+            elif "_refuse_continue" in request.POST:
+                pack.refuse()
+            elif "_save_continue" in request.POST:
+                pack.save()
+
+            # Redirect to the next pack
+            next_ids = request.POST.get("_bulkreview_next")
+            if not next_ids:
+                return self._redirect_after_review(request)
+
+            remaining_ids = next_ids.split(",")
+            object_id = remaining_ids[0]
+            # Create the GET parameters
+            params_dict = {
+                "_changelist_filters": request.GET.get("_changelist_filters"),
+                "_bulkreview_next": ",".join(remaining_ids[1:]),
+            }
+            # add next ids in parameters without the current object id
+            params = urlencode(params_dict)
+
+            return redirect(
+                reverse("admin:core_pack_change", kwargs={"object_id": str(object_id)})
+                + f"?{params}"
+            )
+
+        if request.method == "GET" and "_bulkreview_next" in request.GET:
+            # In case of a bulk action, get the next pack ids and add it to context
+            ids = request.GET.get("_bulkreview_next")
+            extra_context = {"bulk_pack_ids": ids}
 
         return admin.ModelAdmin.changeform_view(
             self,
