@@ -120,8 +120,14 @@ class PackAdmin(admin.ModelAdmin):
     # customs actions
     @admin.action(description="Start a bulk review session")
     def bulk_review_packs(self, request, queryset):
-        # Add the next pack ids to the GET parameters
         ordered_queryset = queryset.order_by("id")
+
+        if not ordered_queryset:
+            # If no queryset (happens when the red 'n packs to review' button
+            # is clicked), start the session with all 'IN_REVIEW' packs.
+            ordered_queryset = Pack.objects.in_review().order_by("id")
+
+        # Add the next pack ids to the GET parameters
         object_id = str(ordered_queryset.first().id)
         pack_ids = [
             str(pack_id) for pack_id in ordered_queryset.values_list("id", flat=True)
@@ -131,7 +137,7 @@ class PackAdmin(admin.ModelAdmin):
         # create the GET parameters
         params_dict = {
             "_changelist_filters": urlencode(request.GET),
-            "_bulkreview_next": ",".join(pack_ids),
+            "_bulkreview_next": ",".join(pack_ids) or "__last",
         }
         params = urlencode(params_dict)
 
@@ -178,8 +184,8 @@ class PackAdmin(admin.ModelAdmin):
                 pack.save()
 
             # Redirect to the next pack
-            next_ids = request.POST.get("_bulkreview_next")
-            if not next_ids:
+            next_ids = request.POST.get("_bulkreview_next") or "__last"
+            if next_ids == "__last":
                 return self._redirect_after_review(request)
 
             remaining_ids = next_ids.split(",")
@@ -187,7 +193,7 @@ class PackAdmin(admin.ModelAdmin):
             # Create the GET parameters
             params_dict = {
                 "_changelist_filters": request.GET.get("_changelist_filters"),
-                "_bulkreview_next": ",".join(remaining_ids[1:]),
+                "_bulkreview_next": ",".join(remaining_ids[1:]) or "__last",
             }
             # add next ids in parameters without the current object id
             params = urlencode(params_dict)
@@ -199,7 +205,7 @@ class PackAdmin(admin.ModelAdmin):
 
         if request.method == "GET" and "_bulkreview_next" in request.GET:
             # In case of a bulk action, get the next pack ids and add it to context
-            ids = request.GET.get("_bulkreview_next")
+            ids = request.GET.get("_bulkreview_next") or "__last"
             extra_context = {"bulk_pack_ids": ids}
 
         return admin.ModelAdmin.changeform_view(

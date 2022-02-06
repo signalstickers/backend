@@ -1,10 +1,19 @@
-.to-review {
+.to-review-form {
+    display: inline-block;
+    margin-right: 10px;
+}
+.to-review-form #to-review-btn {
+    display: inline-block;
     background-color: #c40101;
     color: white;
     padding: 6px 10px;
     font-weight: bold;
     font-size: 12px;
     border-radius: 4px;
+}
+
+.bulkreview-help{
+    display: inline-block;
 }
 
 .sticker-preview {

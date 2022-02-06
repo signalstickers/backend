@@ -3,9 +3,16 @@
 {% block welcome-msg %}
 {% if packs_to_review %}
 
-<a href="{% url 'admin:core_pack_changelist' %}?status__exact=IN_REVIEW" style="margin-right: 20px;">
-    <span class="to-review">🔔 {{packs_to_review}} pack{{packs_to_review|pluralize:",s"}} to review</span>
-</a>
+<form class="to-review-form" method="POST" action="{% url 'admin:core_pack_changelist' %}">
+    <input type="hidden" name="action" value="bulk_review_packs">
+    <input type="hidden" name="select_across" value="0">
+    <input type="hidden" name="index" value="0">
+    <input type="hidden" name="_selected_action" value="-1">
+    {% csrf_token %}
+    <input type="submit" id="to-review-btn"
+        value="🔔 {{packs_to_review}} pack{{packs_to_review|pluralize:',s'}} to review">
+</form>
+
 {% endif %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'core/admin/admin.css' %}">

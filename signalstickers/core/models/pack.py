@@ -30,11 +30,17 @@ class PackManager(models.Manager):
             )
         )
 
+    def in_review(self):
+        """
+        Return packs with status "IN REVIEW".
+        """
+        return Pack.objects.filter(status="IN_REVIEW")
+
     def in_review_count(self):
         """
         Return packs count with status "IN REVIEW".
         """
-        return Pack.objects.filter(status="IN_REVIEW").count()
+        return Pack.objects.in_review().count()
 
     def not_twitteds(self):
         """
