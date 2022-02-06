@@ -20,6 +20,7 @@ class SiteStat(models.Model):
 
     class Meta:
         db_table = "sitestats"
+        default_permissions = ()
 
     def __str__(self):
         return f"Stats for {self.month}"

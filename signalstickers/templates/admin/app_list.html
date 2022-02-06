@@ -35,29 +35,35 @@
       </table>
     </div>
   {% endfor %}
+{% endif %}
+ {% if perms.core.view_stats_page or perms.core.invalidate_cloudflare or perms.core.trigger_tweets %}
     <div class="app-custom-actions module">
       <table>
         <caption>
          <span class="section">Tools</span>
         </caption>
-        {% url 'admin:trigger_actions' as trigger_url %}
-        <tr class="{% if trigger_url in request.path %} current-model{% endif %}">
-            <th scope="row">
-                <a href="{{trigger_url}}">Trigger actions</a>
-            </th>
-            <td></td>
-            <td></td>
+
+        {% if perms.core.invalidate_cloudflare or perms.core.trigger_tweets %}
+          {% url 'admin:trigger_actions' as trigger_url %}
+          <tr class="{% if trigger_url in request.path %} current-model{% endif %}">
+              <th scope="row">
+                  <a href="{{trigger_url}}">Trigger actions</a>
+              </th>
+              <td></td>
+              <td></td>
           </tr>
-        {% url 'admin:stats' as stats_url %}
-        <tr class="{% if stats_url in request.path %} current-model{% endif %}">
-            <th scope="row">
-                <a href="{{stats_url}}">Stats</a>
-            </th>
-            <td></td>
-            <td></td>
+          {% endif %}
+
+        {% if perms.core.view_stats_page %}
+          {% url 'admin:stats' as stats_url %}
+          <tr class="{% if stats_url in request.path %} current-model{% endif %}">
+              <th scope="row">
+                  <a href="{{stats_url}}">Stats</a>
+              </th>
+              <td></td>
+              <td></td>
           </tr>
+        {% endif %}
       </table>
     </div>
-{% else %}
-  <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
-{% endif %}
+  {% endif %}

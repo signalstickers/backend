@@ -19,6 +19,8 @@ Trigger actions
 
 {% block content %}
 
+
+{% if perms.core.invalidate_cloudflare and perms.core.trigger_tweets %}
 <h1>Grouped actions</h1>
 <p>
     Invalidate all caches on Cloudflare, and tweet all online packs not set as <code>Tweeted</code>
@@ -33,11 +35,12 @@ Trigger actions
         <div></div>
     </div>
 </form>
+{% endif %}
 
+{% if perms.core.invalidate_cloudflare %}
 <br />
 <hr />
 <br />
-
 <h1>Invalidate Cloudflare caches</h1>
 
 <p>
@@ -52,7 +55,10 @@ Trigger actions
         <div></div>
     </div>
 </form>
+{% endif %}
 
+
+{% if perms.core.trigger_tweets %}
 <br />
 <hr />
 <br />
@@ -71,6 +77,7 @@ Trigger actions
         <div></div>
     </div>
 </form>
+{% endif %}
 
 {{ block.super }}
 

@@ -1,3 +1,4 @@
+from core.models.admin_permissions import AdminPermissions
 from core.models.pack import Pack
 from core.models.pack_animated_mode import PackAnimatedMode
 from core.models.pack_status import PackStatus

@@ -4,6 +4,8 @@ from core.models import Pack, SiteStat
 from core.services import invalidate_cdn, tweet_command
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.utils.html import format_html
 from django.views.generic import View
@@ -19,6 +21,9 @@ class AdminTriggerActionsView(View):
 
     def post(self, request, admin_site):
         def clear_caches():
+            if not request.user.has_perm("core.invalidate_cloudflare"):
+                raise PermissionDenied()
+
             success, output = invalidate_cdn()
             if success:
                 messages.success(
@@ -36,6 +41,9 @@ class AdminTriggerActionsView(View):
                 )
 
         def tweet():
+            if not request.user.has_perm("core.trigger_tweets"):
+                raise PermissionDenied()
+
             nb_packs_tweeted, errs = tweet_command()
             if nb_packs_tweeted:
                 messages.success(request, f"Packs twitted: {nb_packs_tweeted}.")
@@ -63,7 +71,9 @@ class AdminTriggerActionsView(View):
         return render(request, "admin/trigger_actions.html", context=context)
 
 
-class AdminStatsView(View):
+class AdminStatsView(PermissionRequiredMixin, View):
+    permission_required = "core.view_stats_page"
+
     def get(self, request, admin_site):
 
         # Compute basic stats
