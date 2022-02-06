@@ -109,7 +109,13 @@ class PackAdmin(admin.ModelAdmin):
                 }
             }
         )
-        return super().get_form(request, obj, **kwargs)
+        form = super().get_form(request, obj, **kwargs)
+
+        if not request.user.is_superuser:
+            form.base_fields["pack_id"].disabled = True
+            form.base_fields["pack_key"].disabled = True
+
+        return form
 
     # customs actions
     @admin.action(description="Start a bulk review session")
