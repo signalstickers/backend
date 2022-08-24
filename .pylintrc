@@ -3,7 +3,6 @@ disable=
     missing-module-docstring,
     missing-class-docstring,
     missing-function-docstring,
-    no-self-use,
     abstract-method,
     line-too-long,
     no-member,
@@ -18,7 +17,7 @@ disable=
 
 load-plugins=pylint_django
 django-settings-module=signalstickers.settings.dev
-
+ignore-paths=.*/migrations
 
 good-names =
     i,

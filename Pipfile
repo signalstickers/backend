@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
+django = "==3.2.15"
 django-debug-toolbar = "*"
 pyyaml = "*"
 djangorestframework = "*"
@@ -13,14 +13,14 @@ psycopg2-binary = "*"
 signalstickers-client = ">=3.0.0"
 Pillow = "*"
 tweepy = "*"
-django-admin-sortable2 = "*"
+django-admin-sortable2 = "==1.0.4"
 requests = "*"
 bandit = "*"
 
 [dev-packages]
 pylint = "*"
 pylint-django = "*"
-black = "==19.3b0"
+black = "==22.6.0"
 isort = "*"
 coverage = "*"
 
