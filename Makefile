@@ -13,7 +13,7 @@ venv:
 
 lint:
 	pylint ${SRC_DIR} --rcfile .pylintrc
-	black --check ${SRC_DIR}
+	black --check ${SRC_DIR} --exclude 'migrations'
 	isort --sp .isort.cfg --check ${SRC_DIR}
 
 sec:
