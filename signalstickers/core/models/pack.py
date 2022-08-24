@@ -108,7 +108,7 @@ class PackManager(models.Manager):
         submitter_comments="",
         tags=None,
         api_via="",
-        tweeted=False,
+        tweeted=True,
         editorschoice=False,
     ):
         """
@@ -212,7 +212,7 @@ class Pack(models.Model):
     )
     status_comments = models.TextField(blank=True)
     submitter_comments = models.TextField(blank=True)
-    tweeted = models.BooleanField(default=False)
+    tweeted = models.BooleanField(default=True)
 
     @property
     def total_views(self):
