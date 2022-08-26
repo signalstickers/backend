@@ -2,7 +2,7 @@ from urllib.parse import parse_qsl, urlencode
 
 from core.models import Pack, PackStatus
 from django.contrib import admin
-from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m, unquote
+from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
@@ -152,15 +152,18 @@ class PackAdmin(admin.ModelAdmin):
         if request.method == "POST" and any(
             key in ["_approve", "_refuse"] for key in request.POST.keys()
         ):
+
+            posted_data = request.POST.copy()
+            if "_approve" in request.POST:
+                posted_data["status"] = "ONLINE"
+            elif "_refuse" in request.POST:
+                posted_data["status"] = "REFUSED"
+
+            request.POST = posted_data
             # Save all fields
             super().changeform_view(
                 request, object_id, form_url, extra_context=extra_context
             )
-            pack = self.get_object(request, unquote(object_id))
-            if "_approve" in request.POST:
-                pack.approve()
-            elif "_refuse" in request.POST:
-                pack.refuse()
 
             # Once the pack is saved and status changed to approved
             # redirect to previous page with correct url params
@@ -170,18 +173,19 @@ class PackAdmin(admin.ModelAdmin):
         if request.method == "POST" and any(
             "_continue" in key for key in request.POST.keys()
         ):
+
+            posted_data = request.POST.copy()
+
+            if "_approve_continue" in request.POST:
+                posted_data["status"] = "ONLINE"
+            elif "_refuse_continue" in request.POST:
+                posted_data["status"] = "REFUSED"
+
+            request.POST = posted_data
             # Save all fields
             super().changeform_view(
                 request, object_id, form_url, extra_context=extra_context
             )
-            # Perform the wanted action on the current pack
-            pack = self.get_object(request, unquote(object_id))
-            if "_approve_continue" in request.POST:
-                pack.approve()
-            elif "_refuse_continue" in request.POST:
-                pack.refuse()
-            elif "_save_continue" in request.POST:
-                pack.save()
 
             # Redirect to the next pack
             next_ids = request.POST.get("_bulkreview_next") or "__last"

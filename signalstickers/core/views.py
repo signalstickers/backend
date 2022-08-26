@@ -1,10 +1,12 @@
 from statistics import mean, median
 
-from core.models import Pack, SiteStat
+from core.models import LOG_CLEAR_CACHES, LOG_TWEET, AdminAction, Pack, SiteStat
 from core.services import invalidate_cdn, tweet_command
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.contrib import messages
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.utils.html import format_html
@@ -32,12 +34,28 @@ class AdminTriggerActionsView(View):
                         "Cloudflare caches cleared. Output: <code>{}</code>", output
                     ),
                 )
+                LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    content_type_id=ContentType.objects.get_for_model(AdminAction).pk,
+                    object_id="",
+                    object_repr="",
+                    action_flag=LOG_CLEAR_CACHES,
+                    change_message=f"Cloudflare caches cleared. Output: {output}",
+                )
             else:
                 messages.error(
                     request,
                     format_html(
                         "Error when invalidating caches: <code>{}</code>", output
                     ),
+                )
+                LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    content_type_id=ContentType.objects.get_for_model(AdminAction).pk,
+                    object_id="",
+                    object_repr="",
+                    action_flag=LOG_CLEAR_CACHES,
+                    change_message=f"Error when invalidating caches: {output}",
                 )
 
         def tweet():
@@ -46,13 +64,32 @@ class AdminTriggerActionsView(View):
 
             nb_packs_tweeted, errs = tweet_command()
             if nb_packs_tweeted:
-                messages.success(request, f"Packs twitted: {nb_packs_tweeted}.")
+                success_message = f"Packs twitted: {nb_packs_tweeted}."
+                messages.success(request, success_message)
+
+                LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    content_type_id=ContentType.objects.get_for_model(AdminAction).pk,
+                    object_id="",
+                    object_repr="",
+                    action_flag=LOG_TWEET,
+                    change_message=success_message,
+                )
+
             else:
                 messages.error(
                     request,
                     format_html(
                         "No pack has been tweeted. Errors: <code>{}</code>", errs
                     ),
+                )
+                LogEntry.objects.log_action(
+                    user_id=request.user.id,
+                    content_type_id=ContentType.objects.get_for_model(AdminAction).pk,
+                    object_id="",
+                    object_repr="",
+                    action_flag=LOG_TWEET,
+                    change_message=f"No pack tweeted: {errs}",
                 )
 
         if request.POST.get("action") == "cloudflareclear_and_tweet":

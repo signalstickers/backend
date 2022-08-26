@@ -1,6 +1,19 @@
 {% extends "admin/base.html" %}
 {% load static %}
 {% block welcome-msg %}
+
+
+{% if caches_dirty is True %}
+<div class="caches-status" title="New content has not been published!">
+    <a class="caches-dirty" href="{% url 'admin:trigger_actions' %}"> ⚠️ Not up-to-date</a>
+</div>
+{% elif caches_dirty is False %}
+<div class="caches-status" title="Caches are clean, the content has been published.">
+    ✔️ Up-to-date
+</div>
+{% endif %}
+
+
 {% if packs_to_review %}
 
 <form class="to-review-form" method="POST" action="{% url 'admin:core_pack_changelist' %}">
@@ -27,7 +40,7 @@
 
 {{ block.super }}
 
-<a href="https://signalstickers.com" target="_blank" rel="noopener">signalstickers.com</a> /
+<a href="https://signalstickers.com" target="_blank" rel="noopener">View site</a> /
 
 <script src="{% static 'core/admin/chart.min.js' %}"></script>
 {% endblock %}

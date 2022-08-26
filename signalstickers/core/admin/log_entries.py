@@ -1,5 +1,6 @@
+from core.models import LOG_DELETION, LOGENTRY_TEXT
 from django.contrib import admin
-from django.contrib.admin.models import DELETION, LogEntry
+from django.contrib.admin.models import LogEntry
 from django.urls import NoReverseMatch, reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -31,11 +32,10 @@ class LogEntryAdmin(admin.ModelAdmin):
         return False
 
     def action_flag_(self, obj):
-        flags = {1: "Addition", 2: "Changed", 3: "Deleted"}
-        return flags[obj.action_flag]
+        return LOGENTRY_TEXT[obj.action_flag]
 
     def object_link(self, obj):
-        if obj.action_flag == DELETION:
+        if obj.action_flag == LOG_DELETION:
             link = escape(obj.object_repr)
         else:
             content_type = obj.content_type

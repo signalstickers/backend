@@ -23,7 +23,8 @@ Trigger actions
 {% if perms.core.invalidate_cloudflare and perms.core.trigger_tweets %}
 <h1>Grouped actions</h1>
 <p>
-    Invalidate all caches on Cloudflare, and tweet all online packs not set as <code>Tweeted</code>
+    Invalidate all caches on Cloudflare (publish the content), and tweet all online packs not set as
+    <code>Tweeted</code>
     ({{nb_not_tweeted}}).
 </p>
 
@@ -44,7 +45,7 @@ Trigger actions
 <h1>Invalidate Cloudflare caches</h1>
 
 <p>
-    Invalidate all caches on Cloudflare. This is the same as launching <code>manage.py invalidate_cloudflare</code>
+    Invalidate all caches on Cloudflare, and published the content.
 </p>
 
 <form method="POST">

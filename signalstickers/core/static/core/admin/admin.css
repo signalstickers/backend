@@ -2,6 +2,7 @@
     display: inline-block;
     margin-right: 10px;
 }
+
 .to-review-form #to-review-btn {
     display: inline-block;
     background-color: #c40101;
@@ -10,37 +11,59 @@
     font-weight: bold;
     font-size: 12px;
     border-radius: 4px;
+    position: relative;
+    top: -2px;
 }
 
-.bulkreview-help{
+.caches-status {
+    display: inline-block;
+    /* border: 1px solid white; */
+    padding: 6px 10px;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+#header .caches-status a.caches-dirty {
+    color: #ffcc4d;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+
+.bulkreview-help {
     display: inline-block;
 }
 
 .sticker-preview {
     position: relative;
     display: inline-block;
-    margin : 6px;
+    margin: 6px;
     border: 1px solid #f8f8f8;
     border-radius: 4px;
     width: 150px;
     height: 150px;
 }
-.sticker-preview img{
+
+.sticker-preview img {
     max-width: 150px;
     max-height: 150px;
 }
-.sticker-emoji{
+
+.sticker-emoji {
     position: absolute;
-    bottom : 0px;
+    bottom: 0px;
     right: 0px;
 }
-.stickers-preview-container{
+
+.stickers-preview-container {
     background: #ccc;
     border: 1px solid #eee;
     border-radius: 4px;
     text-align: center;
 }
-.pack-nsfw{
+
+.pack-nsfw {
     display: block;
     border: 1px solid #f5c6cb;
     width: auto;
@@ -53,7 +76,8 @@
     border-radius: 4px;
 
 }
-#sticker-preview-link{
+
+#sticker-preview-link {
     background: #79aec8;
     padding: 10px 15px;
     border: none;
@@ -64,28 +88,32 @@
     font-size: 15px;
     margin-left: 10px;
 }
-#sticker-preview-link:hover{
+
+#sticker-preview-link:hover {
     background: #609ab6;
 }
 
-.graph{
-    max-width: 1000px!important;
-    max-height:400px!important;
+.graph {
+    max-width: 1000px !important;
+    max-height: 400px !important;
 }
 
-.stats-col{
+.stats-col {
     display: inline-block;
     margin-right: 40px;
 }
 
-.stats-col a:first-of-type{
+.stats-col a:first-of-type {
     margin-right: 10px;
 }
 
-#save_approve_btn, #approve_continue_btn{
+#save_approve_btn,
+#approve_continue_btn {
     background-color: forestgreen;
 }
-#refuse_continue_btn, #refuse_approve_btn{
+
+#refuse_continue_btn,
+#refuse_approve_btn {
     background-color: var(--delete-button-bg);
 }
 
@@ -99,8 +127,10 @@
 
 .loading {
     margin-left: 10px;
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid #3498db; /* Blue */
+    border: 5px solid #f3f3f3;
+    /* Light grey */
+    border-top: 5px solid #3498db;
+    /* Blue */
     border-radius: 50%;
     width: 12px;
     height: 12px;
@@ -109,28 +139,29 @@
 
 /* Animation */
 @keyframes spinner {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 
-@media only screen and (max-width: 930px)  {
-    .stats-col{
+@media only screen and (max-width: 930px) {
+    .stats-col {
         margin-right: 0;
     }
 }
 
 
-@media (min-width: 760px) { 
-    #nav-sidebar.sticky{
+@media (min-width: 760px) {
+    #nav-sidebar.sticky {
         top: 60px;
     }
 
-    #header{
+    #header {
         position: fixed;
         width: 100%;
         top: 0;
@@ -138,7 +169,7 @@
         box-sizing: border-box;
     }
 
-    #container{
+    #container {
         padding-top: 49px;
         box-sizing: border-box;
     }

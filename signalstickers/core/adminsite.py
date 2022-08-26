@@ -4,6 +4,9 @@ from django.urls import path
 
 
 class CustomAdmin(AdminSite):
+
+    site_url = None
+
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
