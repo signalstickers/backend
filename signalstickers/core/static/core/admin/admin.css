@@ -42,13 +42,22 @@
     border: 1px solid #f8f8f8;
     border-radius: 4px;
     width: 150px;
+    background-color: #ccc;
     height: 150px;
+    cursor: zoom-in;
 }
+
+.sticker-preview:hover {
+    z-index: 999;
+    transform: scale(2.7);
+}
+
 
 .sticker-preview img {
     max-width: 150px;
     max-height: 150px;
 }
+
 
 .sticker-emoji {
     position: absolute;
@@ -61,6 +70,10 @@
     border: 1px solid #eee;
     border-radius: 4px;
     text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 .pack-nsfw {
