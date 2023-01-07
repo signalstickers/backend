@@ -186,7 +186,7 @@ class PackAdmin(admin.ModelAdmin):
                 posted_data["status"] = "ONLINE"
             elif "_refuse_continue" in request.POST:
                 posted_data["status"] = "REFUSED"
-            elif "_escalate" in request.POST:
+            elif "_escalate_continue" in request.POST:
                 posted_data["status"] = "ESCALATED"
 
             request.POST = posted_data
