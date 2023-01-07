@@ -20,10 +20,24 @@
     <input type="hidden" name="action" value="bulk_review_packs">
     <input type="hidden" name="select_across" value="0">
     <input type="hidden" name="index" value="0">
-    <input type="hidden" name="_selected_action" value="-1">
+    <input type="hidden" name="_selected_action" value="-2">
     {% csrf_token %}
-    <input type="submit" id="to-review-btn"
+    <input type="submit" id="to-review-btn" class="topbar-action-btn"
         value="🔔 {{packs_to_review}} pack{{packs_to_review|pluralize:',s'}} to review">
+</form>
+
+{% endif %}
+
+{% if packs_escalated and user.is_superuser %}
+
+<form class="to-review-form" method="POST" action="{% url 'admin:core_pack_changelist' %}">
+    <input type="hidden" name="action" value="bulk_review_packs">
+    <input type="hidden" name="select_across" value="0">
+    <input type="hidden" name="index" value="0">
+    <input type="hidden" name="_selected_action" value="-3">
+    {% csrf_token %}
+    <input type="submit" id="escalated-notif-btn" class="topbar-action-btn"
+        value="📨 {{packs_escalated}} pack{{packs_escalated|pluralize:',s'}} escalated">
 </form>
 
 {% endif %}

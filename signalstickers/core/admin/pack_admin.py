@@ -19,6 +19,8 @@ class PackAdmin(admin.ModelAdmin):
     def _status(self, obj):
         if obj.status == PackStatus.IN_REVIEW.name:
             return mark_safe('<b style="color:red">To review</b>')  # nosec
+        if obj.status == PackStatus.ESCALATED.name:
+            return mark_safe('<b style="color:blue">Escalated</b>')  # nosec
         return PackStatus[obj.status].value
 
     def _view(self, obj):
@@ -122,10 +124,12 @@ class PackAdmin(admin.ModelAdmin):
     def bulk_review_packs(self, request, queryset):
         ordered_queryset = queryset.order_by("id")
 
+        # If no queryset == no pack selected in the list, so see if there's another action to do
         if not ordered_queryset:
-            # If no queryset (happens when the red 'n packs to review' button
-            # is clicked), start the session with all 'IN_REVIEW' packs.
-            ordered_queryset = Pack.objects.in_review().order_by("id")
+            if "-2" in request.POST["_selected_action"]:
+                ordered_queryset = Pack.objects.in_review().order_by("id")
+            elif "-3" in request.POST["_selected_action"]:
+                ordered_queryset = Pack.objects.escalated().order_by("id")
 
         # Add the next pack ids to the GET parameters
         object_id = str(ordered_queryset.first().id)
@@ -150,7 +154,7 @@ class PackAdmin(admin.ModelAdmin):
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         # Classic pack we need to approve automatically
         if request.method == "POST" and any(
-            key in ["_approve", "_refuse"] for key in request.POST.keys()
+            key in ["_approve", "_refuse", "_escalate"] for key in request.POST.keys()
         ):
 
             posted_data = request.POST.copy()
@@ -158,6 +162,8 @@ class PackAdmin(admin.ModelAdmin):
                 posted_data["status"] = "ONLINE"
             elif "_refuse" in request.POST:
                 posted_data["status"] = "REFUSED"
+            elif "_escalate" in request.POST:
+                posted_data["status"] = "ESCALATED"
 
             request.POST = posted_data
             # Save all fields
@@ -180,6 +186,8 @@ class PackAdmin(admin.ModelAdmin):
                 posted_data["status"] = "ONLINE"
             elif "_refuse_continue" in request.POST:
                 posted_data["status"] = "REFUSED"
+            elif "_escalate" in request.POST:
+                posted_data["status"] = "ESCALATED"
 
             request.POST = posted_data
             # Save all fields

@@ -10,11 +10,13 @@
     {% if not bulk_pack_ids %}
         <input type="submit" value="Approve and save" name="_approve" id="save_approve_btn">
         <input type="submit" value="Refuse and save" name="_refuse" id="refuse_approve_btn">
+        <input type="submit" value="Escalate" name="_escalate" id="escalate_btn">
     {% else %}
         <input type="hidden" value="{{ bulk_pack_ids }}" name="_bulkreview_next">
         <span class="help bulkreview-help">You are in a bulk review session.</span>
         <input type="submit" value="Approve and continue" name="_approve_continue" id="approve_continue_btn">
         <input type="submit" value="Refuse and continue" name="_refuse_continue" id="refuse_continue_btn">
+        <input type="submit" value="Escalate" name="_escalate" id="escalate_btn">
         <input type="submit" value="Save and continue" name="_save_continue" id="save_continue_btn">
     {% endif %}
 {% endif %}

@@ -3,9 +3,8 @@
     margin-right: 10px;
 }
 
-.to-review-form #to-review-btn {
+.to-review-form .topbar-action-btn {
     display: inline-block;
-    background-color: #c40101;
     color: white;
     padding: 6px 10px;
     font-weight: bold;
@@ -13,6 +12,14 @@
     border-radius: 4px;
     position: relative;
     top: -2px;
+}
+
+.to-review-form #to-review-btn {
+    background-color: #c40101;
+}
+
+.to-review-form #escalated-notif-btn {
+    background-color: #2d68c4;
 }
 
 .caches-status {
@@ -123,6 +130,10 @@
 #save_approve_btn,
 #approve_continue_btn {
     background-color: forestgreen;
+}
+
+#escalate_btn {
+    background-color: #2d68c4;
 }
 
 #refuse_continue_btn,

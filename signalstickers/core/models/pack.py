@@ -36,11 +36,23 @@ class PackManager(models.Manager):
         """
         return Pack.objects.filter(status="IN_REVIEW")
 
+    def escalated(self):
+        """
+        Return packs with status "ESCALATED".
+        """
+        return Pack.objects.filter(status="ESCALATED")
+
     def in_review_count(self):
         """
         Return packs count with status "IN REVIEW".
         """
         return Pack.objects.in_review().count()
+
+    def escalated_count(self):
+        """
+        Return packs count with status "ESCALATED".
+        """
+        return Pack.objects.escalated().count()
 
     def not_twitteds(self):
         """
