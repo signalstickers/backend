@@ -1,8 +1,10 @@
+import datetime
 import logging
 
 from api.models import ContributionRequest
 from core.models import Pack
 from django.conf import settings
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.core.mail import EmailMessage
 from libs.twitter_bot import tweet_pack
@@ -81,6 +83,7 @@ def send_email_on_pack_propose(pack):
     recipients = user_model.objects.filter(
         groups__name="email_notification_on_propose"
     ).values_list("email", flat=True)
+
     message = f"""\
 Hello! 👋
 
@@ -93,6 +96,63 @@ Comment:
 """
     email = EmailMessage(
         f"Propose: {pack.title}",
+        message,
+        settings.EMAIL_FROM,
+        [],  # to
+        list(recipients),  # bcc
+    )
+    try:
+        email.send()
+    except Exception as ex:  # pylint: disable=broad-except
+        logger.error("Error sending e-mail: %s", ex)
+
+
+def send_email_pack_escalated():
+    """
+    Send an email to the users in group `email_notification_on_escalated`)
+    """
+
+    # Recipients
+    user_model = get_user_model()
+    recipients = user_model.objects.filter(
+        groups__name="email_notification_on_escalated"
+    ).values_list("email", flat=True)
+
+    # Packs
+    escalated_packs = (
+        Pack.objects.escalated().order_by("id").values_list("id", flat=True)
+    )
+    packs_changed_yesterday = (
+        LogEntry.objects.filter(
+            action_time__date=datetime.datetime.today() - datetime.timedelta(days=1)
+        )
+        .filter(content_type__model="pack")
+        .order_by("object_id")
+        .distinct("object_id")
+        .values_list("object_id", flat=True)
+    )
+
+    nb_packs_escalated_yesterday = len(
+        [
+            pack_id
+            for pack_id in escalated_packs
+            if str(pack_id) in packs_changed_yesterday
+        ]
+    )
+
+    if not nb_packs_escalated_yesterday:
+        logger.info("No pack escalated yesterday")
+        return
+
+    logger.info("%i pack escalated yesterday", nb_packs_escalated_yesterday)
+    message = f"""\
+Hello! 👋
+
+{nb_packs_escalated_yesterday} have been escalated today. Please review!
+
+"""
+    email = EmailMessage(
+        f"{nb_packs_escalated_yesterday} escalated packs",
         message,
         settings.EMAIL_FROM,
         [],  # to
