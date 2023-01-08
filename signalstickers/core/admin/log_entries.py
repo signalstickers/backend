@@ -19,7 +19,7 @@ class LogEntryAdmin(admin.ModelAdmin):
         "content_type",
         "object_link",
         "action_flag_",
-        "change_message",
+        "_change_message",
     ]
 
     def has_add_permission(self, request):
@@ -29,10 +29,15 @@ class LogEntryAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.user.is_superuser
 
     def action_flag_(self, obj):
         return LOGENTRY_TEXT[obj.action_flag]
+
+    def _change_message(self, obj):
+        if obj.change_message == "[]":
+            return mark_safe("<i>Saved without changes</i>")  # nosec
+        return obj.change_message
 
     def object_link(self, obj):
         if obj.action_flag == LOG_DELETION:
