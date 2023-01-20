@@ -528,6 +528,36 @@ class PackTestCase(TestCase):
             ],
         )
 
+    def test_pack_cleanup(self, mocked_getpacklib):
+        """Furry packs should not include any other tags than 'Furry'"""
+        mocked_getpacklib.return_value = TestPack(
+            "Pack Furry", "Pack Furry author", b"\x00"
+        )
+
+        # Furry pack with forbidden keywords
+        Pack.objects.new(
+            pack_id="t" * 32,
+            pack_key="t" * 64,
+            status=PackStatus.ONLINE.name,
+            tags=["furry", "sexy", "cute"],
+        )
+
+        response = self.client.get(reverse("packs"))
+        expected_tag = ["furry"]
+        self.assertEqual(
+            response.data,
+            [
+                {
+                    "meta": {"id": "t" * 32, "key": "t" * 64, "tags": expected_tag},
+                    "manifest": {
+                        "title": "Pack Furry",
+                        "author": "Pack Furry author",
+                        "cover": {"id": 42},
+                    },
+                }
+            ],
+        )
+
 
 # pylint: disable=no-member
 class BotPreventionQuestionTestCase(TestCase):
