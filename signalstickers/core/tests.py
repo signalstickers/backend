@@ -3,7 +3,7 @@ import tempfile
 from unittest.mock import patch
 
 from core import utils
-from core.models import Pack, PackAnimatedMode, PackStatus
+from core.models import Pack, PackAnimatedMode, PackStatus, Tag
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
@@ -595,3 +595,35 @@ class YmlImportCommandTest(TestCase):
             call_command("import_from_yml", f_in.name, stdout=out)
 
         self.assertIn(f"Pack {'a'*32} not imported (key: {'b'*64})", out.getvalue())
+
+
+@patch("core.models.pack.get_pack_from_signal", autospec=True)
+class CleanPacksTagsCommandTest(TestCase):
+    def test_command(self, mocked_getpacklib):
+        """The Command should correctly remove, clean, delete tags"""
+        mocked_getpacklib.return_value = TestPack(
+            "Pack Pack", "Pack Pack author", b"\x00"
+        )
+
+        # Pack with malformed tags
+        malformed_tag_name = [
+            "#pastel #unicorn #flowers #pastel",
+            "pastel",
+            " #foo #bar",
+        ]
+        malformed_tags_pack = Pack.objects.new(
+            pack_id="r" * 32,
+            pack_key="r" * 64,
+            status=PackStatus.ONLINE.name,
+            tags=malformed_tag_name,
+        )
+
+        call_command("clean_packs_tags")
+
+        # malformed tags should be cleaned (e.g: "#pastel #unicorn #flowers" should become three distinct tags)
+        malformed_tags_pack.refresh_from_db()
+        tags_names = [tag.name for tag in malformed_tags_pack.tags.all()]
+        self.assertEqual(
+            sorted(tags_names), ["bar", "flowers", "foo", "pastel", "unicorn"]
+        )
+        self.assertFalse(Tag.objects.filter(name=malformed_tag_name).exists())

@@ -26,6 +26,10 @@ class PackSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, instance):
+        pack_tags_names = [tag.name for tag in instance.tags.all()]
+        # Furry packs should only contain a "furry" tag
+        if "furry" in pack_tags_names:
+            pack_tags_names = ["furry"]
 
         return remove_empty_values(
             {
@@ -33,7 +37,7 @@ class PackSerializer(serializers.ModelSerializer):
                     "id": instance.pack_id,
                     "key": instance.pack_key,
                     "source": instance.source,
-                    "tags": [tag.name for tag in instance.tags.all()],
+                    "tags": pack_tags_names,
                     "nsfw": instance.nsfw,
                     "original": instance.original,
                     "animated": instance.animated,
