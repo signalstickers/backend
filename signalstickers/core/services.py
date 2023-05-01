@@ -65,7 +65,7 @@ def invalidate_cdn():
         resp = requests.post(url, json=data, headers=headers, timeout=45)
 
         if resp.status_code not in range(200, 300):
-            raise Exception(resp.text)
+            raise Exception(resp.text)  # pylint: disable=broad-exception-raised
 
     except Exception as e:  # pylint: disable=broad-except
         mess = f"Error when invalidating caches: {e}"
