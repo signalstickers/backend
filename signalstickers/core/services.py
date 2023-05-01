@@ -62,7 +62,7 @@ def invalidate_cdn():
         headers = {"Authorization": f'Bearer {settings.CLOUDFLARE_CONF["token"]}'}
         data = {"purge_everything": True}
 
-        resp = requests.post(url, json=data, headers=headers)
+        resp = requests.post(url, json=data, headers=headers, timeout=45)
 
         if resp.status_code not in range(200, 300):
             raise Exception(resp.text)
