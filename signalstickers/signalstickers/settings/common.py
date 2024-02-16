@@ -10,9 +10,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 INSTALLED_APPS = [
     "core.apps.CustomAdmin",
-    "adminsortable2",
-    "api",
-    "core",
+    "api.apps.ApiConfig",
+    "core.apps.CoreConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

@@ -195,7 +195,9 @@ def tweet_pack(django_pack):
     # Set tweet content
     content_nsfw = "\n⚠️ This pack is NSFW 🔞\n" if django_pack.nsfw else ""
     content_original = "\n✨ This pack is original ✨\n" if django_pack.original else ""
-    content_animated = "\n 🎡 This pack is animated! 🎡\n" if django_pack.animated else ""
+    content_animated = (
+        "\n 🎡 This pack is animated! 🎡\n" if django_pack.animated else ""
+    )
     content_hashtag = (
         "\n\n#makeprivacystick" if "twitter" not in django_pack.source else ""
     )
