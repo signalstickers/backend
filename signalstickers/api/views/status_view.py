@@ -37,9 +37,11 @@ class StatusView(APIView):
                     "pack_title": pack.title,
                     "pack_id": pack.pack_id,
                     "status": PackStatus[pack.status].name,
-                    "status_comments": pack.status_comments
-                    if PackStatus[pack.status] == PackStatus.REFUSED
-                    else "",
+                    "status_comments": (
+                        pack.status_comments
+                        if PackStatus[pack.status] == PackStatus.REFUSED
+                        else ""
+                    ),
                 }
             )
         except:  # pylint: disable=bare-except
