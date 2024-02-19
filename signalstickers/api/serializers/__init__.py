@@ -6,5 +6,6 @@ from api.serializers.pack_request_serializer import (
     PackRequestSerializer,
 )
 from api.serializers.pack_serializer import PackSerializer
+from api.serializers.report_serializer import ReportSerializer
 from api.serializers.stats_ping_serializer import StatsPingSerializer
 from api.serializers.status_serializer import StatusSerializer

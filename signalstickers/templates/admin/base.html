@@ -42,6 +42,15 @@
 
 {% endif %}
 
+{% if reports_to_process and perms.core.view_report %}
+
+<form class="to-review-form" method="GET" action="{% url 'admin:core_report_changelist' %}">
+    <input type="submit" id="reports-notif-btn" class="topbar-action-btn"
+        value="⚠️ {{reports_to_process}} report{{reports_to_process|pluralize:',s'}} to process">
+</form>
+
+{% endif %}
+
 <link rel="stylesheet" type="text/css" href="{% static 'core/admin/admin.css' %}">
 
 {% if debug %}

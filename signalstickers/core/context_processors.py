@@ -1,4 +1,4 @@
-from core.models import AdminAction, Pack
+from core.models import AdminAction, Pack, Report
 
 
 def admin_navbar(request):
@@ -6,6 +6,7 @@ def admin_navbar(request):
         return {
             "packs_to_review": Pack.objects.in_review_count(),
             "packs_escalated": Pack.objects.escalated_count(),
+            "reports_to_process": Report.objects.to_process_count(),
             "caches_dirty": AdminAction.caches_dirty(),
         }
     return {}

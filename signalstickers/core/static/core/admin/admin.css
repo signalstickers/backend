@@ -23,6 +23,11 @@
     color: black;
 }
 
+.to-review-form #reports-notif-btn {
+    background-color: #f75c00;
+    color: black;
+}
+
 .caches-status {
     display: inline-block;
     /* border: 1px solid white; */
