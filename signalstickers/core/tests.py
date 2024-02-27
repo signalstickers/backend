@@ -114,7 +114,9 @@ class PackTestCase(TestCase):
                 status=PackStatus.IN_REVIEW.name,
             )
 
-        with self.assertRaisesRegex(ValidationError, "Pack does not exists on Signal"):
+        with self.assertRaisesRegex(
+            ValidationError, "The pack does not exists on Signal, or is invalid."
+        ):
             Pack.objects.new(
                 pack_id="a" * 32,
                 pack_key=self.testpack["pack_key"],
@@ -142,7 +144,9 @@ class PackTestCase(TestCase):
                 status=PackStatus.IN_REVIEW.name,
             )
 
-        with self.assertRaisesRegex(ValidationError, "Pack does not exists on Signal"):
+        with self.assertRaisesRegex(
+            ValidationError, "The pack does not exists on Signal, or is invalid."
+        ):
             Pack.objects.new(
                 pack_id=self.testpack["pack_id"],
                 pack_key="a" * 64,

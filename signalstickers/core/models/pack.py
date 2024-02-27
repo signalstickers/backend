@@ -266,7 +266,7 @@ class Pack(models.Model):
         # Pack verification
         pack = get_pack_from_signal(self.pack_id, self.pack_key)
         if not pack:
-            raise ValidationError("Pack does not exists on Signal: wrong id or key?")
+            raise ValidationError("The pack does not exists on Signal, or is invalid.")
 
         self.title = pack.title
         self.author = pack.author
