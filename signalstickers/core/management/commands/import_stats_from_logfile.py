@@ -53,7 +53,7 @@ ON THE APPLICATION. Use it WITH CAUTION.
             try:
                 # Packs
                 pack_id = re.match(
-                    "https://signalstickers.com/pack/([a-z0-9]{32})", line[2]
+                    "https://signalstickers.org/pack/([a-z0-9]{32})", line[2]
                 ).group(1)
 
                 if pack_id not in packs_stats:

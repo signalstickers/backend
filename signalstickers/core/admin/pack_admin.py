@@ -26,11 +26,11 @@ class PackAdmin(admin.ModelAdmin):
     def _view(self, obj):
         if obj.status == PackStatus.ONLINE.name:
             return format_html(
-                '<a target="_blank" href="https://signalstickers.com/pack/{}">View</a>',
+                '<a target="_blank" href="https://signalstickers.org/pack/{}">View</a>',
                 obj.pack_id,
             )
         return format_html(
-            '<a target="_blank" href="https://signalstickers.com/pack/{}?key={}">View</a>',
+            '<a target="_blank" href="https://signalstickers.org/pack/{}?key={}">View</a>',
             obj.pack_id,
             obj.pack_key,
         )

@@ -6,8 +6,8 @@ from django.utils.feedgenerator import Atom1Feed
 
 class RssPackFeed(Feed):
     title = "Signalstickers"
-    link = "https://signalstickers.com/"
-    description = "Updates on new packs on signalstickers.com! Atom feed is also available at /feed/atom/"
+    link = "https://signalstickers.org/"
+    description = "Updates on new packs on signalstickers.org! Atom feed is also available at /feed/atom/"
 
     description_template = "feeds/item_description.html"
 
@@ -15,7 +15,7 @@ class RssPackFeed(Feed):
         return Pack.objects.onlines()[:10]
 
     def item_link(self, item):
-        return f"https://signalstickers.com/pack/{item.pack_id}"
+        return f"https://signalstickers.org/pack/{item.pack_id}"
 
     def item_author_name(self, item):
         return item.author
@@ -43,4 +43,4 @@ class RssPackFeed(Feed):
 
 class AtomPackFeed(RssPackFeed):
     feed_type = Atom1Feed
-    subtitle = "Updates on new packs on signalstickers.com! RSS feed is also available at /feed/rss/"
+    subtitle = "Updates on new packs on signalstickers.org! RSS feed is also available at /feed/rss/"

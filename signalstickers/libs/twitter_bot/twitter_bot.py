@@ -207,7 +207,7 @@ def tweet_pack(django_pack):
 "{pack_sst_cli.title}" by {pack_sst_cli.author}
 {content_animated}{content_original}{content_nsfw}
 🖼 {pack_sst_cli.nb_stickers} stickers
-➡️ https://signalstickers.com/pack/{pack_sst_cli.id}{content_hashtag}
+➡️ https://signalstickers.org/pack/{pack_sst_cli.id}{content_hashtag}
     """
 
     media_ids = []
