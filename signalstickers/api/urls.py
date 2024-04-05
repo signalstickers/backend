@@ -8,6 +8,8 @@ from api.views import (
 )
 from django.urls import path
 
+app_name = "api_v1"
+
 urlpatterns = [
     # Packs
     path("packs/", PacksView.as_view(), name="packs"),

@@ -2,7 +2,6 @@ import logging
 from unittest.mock import patch
 from uuid import UUID
 
-from api.services import check_api_key, new_contribution_request
 from core.models import (
     ApiKey,
     BotPreventionQuestion,
@@ -11,7 +10,11 @@ from core.models import (
     PackStatus,
     SiteStat,
 )
-from core.services import clear_contribution_requests
+from core.services import (
+    check_api_key,
+    clear_contribution_requests,
+    new_contribution_request,
+)
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -53,7 +56,7 @@ class ContributionTestCase(TestCase):
         API response for contributionrequest is correct
         """
         # Check response
-        response = self.client.post(reverse("contributionrequest"))
+        response = self.client.post(reverse("api_v1:contributionrequest"))
         resp_contribution_id = response.data["contribution_id"]
         self.assertEqual(response.status_code, 200)
         self.assertTrue(isinstance(resp_contribution_id, UUID))
@@ -76,7 +79,7 @@ class ContributionTestCase(TestCase):
         contrib_req = new_contribution_request("10.0.0.42")
 
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -128,7 +131,7 @@ class ContributionTestCase(TestCase):
         api_key.save()
 
         response = self.client.put(  # nosec
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -161,7 +164,7 @@ class ContributionTestCase(TestCase):
         api_key.save()
 
         response = self.client.put(  # nosec
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -221,7 +224,7 @@ class ContributionTestCase(TestCase):
         # Invalid contribution (duplicate pack)
         contrib_req = new_contribution_request("10.0.0.42")
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -256,7 +259,7 @@ class ContributionTestCase(TestCase):
         mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
 
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -291,7 +294,7 @@ class ContributionTestCase(TestCase):
         contrib_req.save()
 
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -324,7 +327,7 @@ class ContributionTestCase(TestCase):
         contrib_req.save()
 
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -356,7 +359,7 @@ class ContributionTestCase(TestCase):
         contrib_req = new_contribution_request("10.0.13.37")
 
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -389,7 +392,7 @@ class ContributionTestCase(TestCase):
         )
 
         response = self.client.put(
-            reverse("contribute"),
+            reverse("api_v1:contribute"),
             {
                 "pack": {
                     "pack_id": "a" * 32,
@@ -487,7 +490,7 @@ class PackTestCase(TestCase):
         Pack.objects.new(
             pack_id="g" * 32, pack_key="h" * 64, status=PackStatus.IN_REVIEW.name
         )
-        response = self.client.get(reverse("packs"))
+        response = self.client.get(reverse("api_v1:packs"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "application/json")
@@ -548,7 +551,7 @@ class PackTestCase(TestCase):
             tags=["furry", "sexy", "cute"],
         )
 
-        response = self.client.get(reverse("packs"))
+        response = self.client.get(reverse("api_v1:packs"))
         expected_tag = ["furry"]
         self.assertEqual(
             response.data,
@@ -592,7 +595,7 @@ class StatusTestCase(TestCase):
         )
 
         response = self.client.post(
-            reverse("packstatus"),
+            reverse("api_v1:packstatus"),
             {"pack_id": "a" * 32, "pack_key": "b" * 64},
             content_type="application/json",
         )
@@ -626,7 +629,7 @@ class StatusTestCase(TestCase):
         )
 
         response = self.client.post(
-            reverse("packstatus"),
+            reverse("api_v1:packstatus"),
             {"pack_id": "d" * 32, "pack_key": "e" * 64},
             content_type="application/json",
         )
@@ -643,7 +646,7 @@ class StatusTestCase(TestCase):
     def test_status_badrequest(self, _):
 
         response = self.client.post(
-            reverse("packstatus"),
+            reverse("api_v1:packstatus"),
             {"pack_id": "d" * 33, "pack_key": "e" * 64},
             content_type="application/json",
         )
@@ -651,7 +654,7 @@ class StatusTestCase(TestCase):
         self.assertEqual(response.data, {"error": "Bad request."})
 
         response = self.client.post(
-            reverse("packstatus"),
+            reverse("api_v1:packstatus"),
             {"pack_id": "d" * 32, "pack_key": "e" * 63},
             content_type="application/json",
         )
@@ -666,7 +669,7 @@ class PingTestCase(TestCase):
         self.assertEqual(SiteStat.objects.count(), 0)
 
         response = self.client.post(
-            reverse("statsping"),
+            reverse("api_v1:statsping"),
             "target=home",
             content_type="application/x-www-form-urlencoded",
         )
@@ -699,7 +702,7 @@ class PingTestCase(TestCase):
         pack.save()
 
         response = self.client.post(
-            reverse("statsping"),
+            reverse("api_v1:statsping"),
             f"target={'a' * 32}",
             content_type="application/x-www-form-urlencoded",
         )
@@ -731,7 +734,7 @@ class PingTestCase(TestCase):
         pack.save()
 
         response = self.client.post(
-            reverse("statsping"),
+            reverse("api_v1:statsping"),
             f"target={'a' * 32}",
             content_type="application/x-www-form-urlencoded",
         )
@@ -762,7 +765,7 @@ class PingTestCase(TestCase):
         pack.save()
 
         response = self.client.post(
-            reverse("statsping"),
+            reverse("api_v1:statsping"),
             f"target={'d' * 32}",
             content_type="application/x-www-form-urlencoded",
         )
@@ -777,7 +780,7 @@ class PingTestCase(TestCase):
         )
 
         response = self.client.post(
-            reverse("statsping"),
+            reverse("api_v1:statsping"),
             f"target={'a' * 33}",  # Too long (max=32)
             content_type="application/x-www-form-urlencoded",
         )

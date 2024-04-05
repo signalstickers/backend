@@ -1,5 +1,5 @@
 from api.serializers import ContributionRequestSerializer
-from api.services import new_contribution_request
+from core.services import new_contribution_request
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
