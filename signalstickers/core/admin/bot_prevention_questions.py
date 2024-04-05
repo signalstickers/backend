@@ -1,4 +1,4 @@
-from api.models import ApiKey, BotPreventionQuestion, ContributionRequest
+from core.models import BotPreventionQuestion
 from django.contrib import admin
 
 
@@ -8,14 +8,3 @@ class BotPreventionQuestionAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):  # pylint: disable=arguments-differ
         kwargs.update({"help_texts": {"answer": "Must match [a-zA-Z0-9]+"}})
         return super().get_form(request, obj, **kwargs)
-
-
-@admin.register(ContributionRequest)
-class ContributionRequestAdmin(admin.ModelAdmin):
-    fields = ("id", "client_ip", "question", "request_date")
-    readonly_fields = fields
-
-
-@admin.register(ApiKey)
-class ApiKeyAdmin(admin.ModelAdmin):
-    fields = ("name", "key")

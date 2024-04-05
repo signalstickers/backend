@@ -1,4 +1,7 @@
 from core.models.admin_permissions import AdminPermissions
+from core.models.api_key import ApiKey
+from core.models.bot_prevention_questions import BotPreventionQuestion
+from core.models.contribution_request import ContributionRequest
 from core.models.logs_utils import (
     LOG_ADDITION,
     LOG_CHANGE,

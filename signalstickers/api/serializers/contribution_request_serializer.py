@@ -1,4 +1,4 @@
-from api.models import ContributionRequest
+from core.models import ContributionRequest
 from rest_framework import serializers
 
 

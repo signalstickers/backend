@@ -1,7 +1,7 @@
 from datetime import timedelta
 import uuid
 
-from api.models.bot_prevention_questions import BotPreventionQuestion
+from core.models.bot_prevention_questions import BotPreventionQuestion
 from django.db import models
 from django.utils import timezone
 

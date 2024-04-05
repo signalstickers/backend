@@ -2,9 +2,15 @@ import logging
 from unittest.mock import patch
 from uuid import UUID
 
-from api.models import ApiKey, BotPreventionQuestion, ContributionRequest
 from api.services import check_api_key, new_contribution_request
-from core.models import Pack, PackStatus, SiteStat
+from core.models import (
+    ApiKey,
+    BotPreventionQuestion,
+    ContributionRequest,
+    Pack,
+    PackStatus,
+    SiteStat,
+)
 from core.services import clear_contribution_requests
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.core.exceptions import ValidationError

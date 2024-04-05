@@ -1,8 +1,7 @@
 import datetime
 import logging
 
-from api.models import ContributionRequest
-from core.models import Pack
+from core.models import ContributionRequest, Pack
 from django.conf import settings
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model

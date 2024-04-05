@@ -3,7 +3,7 @@ import logging
 import random
 import re
 
-from api.models import ApiKey, BotPreventionQuestion, ContributionRequest
+from core.models import ApiKey, BotPreventionQuestion, ContributionRequest
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
 
