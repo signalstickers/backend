@@ -183,12 +183,16 @@ def check_contribution_request(contribution_id, client_answer, client_ip):
         )
     except ObjectDoesNotExist:
         logger.info("Received an invalid ContributionRequest")
-        return False, "Invalid contribution request. Try again."
+        return False, "Security verification failed, reload and try again"
 
     if cont_req.request_date + datetime.timedelta(hours=1) < now():
         cont_req.delete()
         logger.info("Received an expired ContributionRequest")
-        return False, "Expired contribution request. Try again."
+        return (
+            False,
+            "Security verification failed, reload and try again."
+            " Reason: you took too long",
+        )
 
     correct_answer = re.sub(r"[^a-z0-9]", "", cont_req.question.answer.strip().lower())
     client_answer = re.sub(r"[^a-z0-9]", "", client_answer.strip().lower())
@@ -197,7 +201,7 @@ def check_contribution_request(contribution_id, client_answer, client_ip):
         cont_req.delete()
         return True, None
 
-    return False, "Wrong answer."
+    return False, "Wrong answer"
 
 
 def check_api_key(key):

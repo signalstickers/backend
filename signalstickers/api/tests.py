@@ -278,7 +278,8 @@ class ContributionTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data, {"error": "Invalid contribution request. Try again."}
+            response.data,
+            {"error": "Security verification failed, reload and try again"},
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
@@ -313,7 +314,13 @@ class ContributionTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data, {"error": "Expired contribution request. Try again."}
+            response.data,
+            {
+                "error": (
+                    "Security verification failed, reload and try again."
+                    " Reason: you took too long"
+                )
+            },
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
@@ -345,7 +352,7 @@ class ContributionTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"error": "Wrong answer."})
+        self.assertEqual(response.data, {"error": "Wrong answer"})
         self.assertEqual(list(Pack.objects.all()), [])
 
     def test_propose_pack_bad_ip_contributionrequest(self, mocked_getpacklib):
@@ -379,7 +386,8 @@ class ContributionTestCase(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
-            response.data, {"error": "Invalid contribution request. Try again."}
+            response.data,
+            {"error": "Security verification failed, reload and try again"},
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
