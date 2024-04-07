@@ -11,6 +11,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 INSTALLED_APPS = [
     "core.apps.CustomAdmin",
     "api.apps.ApiConfig",
+    "api_v2.apps.ApiV2Config",
     "core.apps.CoreConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",

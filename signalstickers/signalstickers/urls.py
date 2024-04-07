@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from api_v2.urls import api_v2
 from core.feeds import AtomPackFeed, RssPackFeed
 import debug_toolbar
 from django.conf import settings
@@ -22,6 +23,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path("v2/", api_v2.urls),
     path("v1/", include("api.urls")),
     path("feed/rss/", RssPackFeed()),
     path("feed/atom/", AtomPackFeed()),

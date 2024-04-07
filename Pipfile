@@ -15,6 +15,7 @@ Pillow = "*"
 tweepy = "*"
 requests = "*"
 bandit = "*"
+django-ninja = "==1.1.0"
 
 [dev-packages]
 pylint = "*"
