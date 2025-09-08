@@ -8,7 +8,7 @@ services:
       dockerfile: docker/postgres.dockerfile
     volumes:
       - "./.pgdata:/var/lib/postgresql/data"
-    restart: always
+    restart: unless-stopped
     env_file:
       - docker/db.env
     ports:
@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: docker/adminer.dockerfile
     container_name: signalstickers_adminer
-    restart: always
+    restart: unless-stopped
     ports:
       - 9988:8080
     env_file:
