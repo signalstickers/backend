@@ -84,7 +84,7 @@ class ContributionView(APIView):
                     submitter_comments=req_srl.validated_data.get(
                         "submitter_comments", ""
                     ),
-                    api_via=api_via,
+                    api_via=api_via,  # pylint: disable=possibly-used-before-assignment
                 )
             except ValidationError as val_err:
                 raise ApiException(str(val_err)) from None

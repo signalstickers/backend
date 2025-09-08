@@ -31,7 +31,6 @@ class Command(BaseCommand):
                     nsfw=pack_data.get("nsfw", False),
                     original=pack_data.get("original", False),
                     tags=tags,
-                    tweeted=True,
                     editorschoice=data.get("editorschoice", False),
                 )
 

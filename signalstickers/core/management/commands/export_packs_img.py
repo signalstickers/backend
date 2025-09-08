@@ -19,9 +19,9 @@ class Command(BaseCommand):
 
                 img = sticker.image_data
                 sticker_id = int(sticker.id)
-                if b"\x61\x63\x54\x4C" in img:  # APNG acTL chunk
+                if b"\x61\x63\x54\x4c" in img:  # APNG acTL chunk
                     ext = "png"
-                elif img.startswith(b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"):  # PNG
+                elif img.startswith(b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"):  # PNG
                     ext = "png"
                 elif img.startswith(b"\x47\x49\x46\x38\x39\x61"):
                     ext = "gif"
@@ -32,6 +32,7 @@ class Command(BaseCommand):
                     ext = "webp"
                 else:
                     print("Unknown file type")
+                    ext = ""
 
                 nb_exported += 1
 

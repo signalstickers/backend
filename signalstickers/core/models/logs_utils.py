@@ -13,14 +13,12 @@ LOG_ADDITION = logentry_add
 LOG_CHANGE = logentry_change
 LOG_DELETION = logentry_deletion
 LOG_CLEAR_CACHES = 13371
-LOG_TWEET = 13372
 
 LOGENTRY_TEXT = {
     LOG_ADDITION: "Added",
     LOG_CHANGE: "Changed",
     LOG_DELETION: "Deleted",
     LOG_CLEAR_CACHES: "Cleared caches",
-    LOG_TWEET: "Tweeted",
 }
 
 

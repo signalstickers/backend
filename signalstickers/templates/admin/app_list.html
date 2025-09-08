@@ -36,14 +36,14 @@
     </div>
   {% endfor %}
 {% endif %}
- {% if perms.core.view_stats_page or perms.core.invalidate_cloudflare or perms.core.trigger_tweets %}
+ {% if perms.core.view_stats_page or perms.core.invalidate_cloudflare %}
     <div class="app-custom-actions module">
       <table>
         <caption>
          <span class="section">Tools</span>
         </caption>
 
-        {% if perms.core.invalidate_cloudflare or perms.core.trigger_tweets %}
+        {% if perms.core.invalidate_cloudflare %}
           {% url 'admin:trigger_actions' as trigger_url %}
           <tr class="{% if trigger_url in request.path %} current-model{% endif %}">
               <th scope="row">

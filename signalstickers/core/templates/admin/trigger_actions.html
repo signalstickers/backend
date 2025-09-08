@@ -20,23 +20,6 @@ Trigger actions
 {% block content %}
 
 
-{% if perms.core.invalidate_cloudflare and perms.core.trigger_tweets %}
-<h1>Grouped actions</h1>
-<p>
-    Invalidate all caches on Cloudflare (publish the content), and tweet all online packs not set as
-    <code>Tweeted</code>
-    ({{nb_not_tweeted}}).
-</p>
-
-<form method="POST">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="cloudflareclear_and_tweet">
-    <div class="loading-group">
-        <input class="test" type="submit" value="Clear caches + tweet">
-        <div></div>
-    </div>
-</form>
-{% endif %}
 
 {% if perms.core.invalidate_cloudflare %}
 <br />
@@ -59,26 +42,6 @@ Trigger actions
 {% endif %}
 
 
-{% if perms.core.trigger_tweets %}
-<br />
-<hr />
-<br />
-
-<h1>Trigger tweets</h1>
-
-<p>
-    Tweet all online packs not set as <code>Tweeted</code> ({{nb_not_tweeted}})
-</p>
-
-<form method="POST">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="tweet">
-    <div class="loading-group">
-        <input type="submit" value="Tweet">
-        <div></div>
-    </div>
-</form>
-{% endif %}
 
 {{ block.super }}
 

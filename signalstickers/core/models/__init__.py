@@ -7,7 +7,6 @@ from core.models.logs_utils import (
     LOG_CHANGE,
     LOG_CLEAR_CACHES,
     LOG_DELETION,
-    LOG_TWEET,
     LOGENTRY_TEXT,
     AdminAction,
 )

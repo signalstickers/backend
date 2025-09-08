@@ -54,14 +54,6 @@ class PackManager(models.Manager):
         """
         return Pack.objects.escalated().count()
 
-    def not_twitteds(self):
-        """
-        Return pack that have not been tweeted
-        """
-        return Pack.objects.filter(
-            status=PackStatus.ONLINE.name, tweeted=False
-        ).order_by("-id")
-
     def most_popular_for_month(self, month, nbr=10):
         """
         Return the top `nbr` packs for a given `month` (YYYY_MM)
@@ -120,7 +112,6 @@ class PackManager(models.Manager):
         submitter_comments="",
         tags=None,
         api_via="",
-        tweeted=True,
         editorschoice=False,
     ):
         """
@@ -146,7 +137,6 @@ class PackManager(models.Manager):
             nsfw=nsfw,
             original=original,
             submitter_comments=submitter_comments,
-            tweeted=tweeted,
             editorschoice=editorschoice,
         )
 
@@ -224,7 +214,6 @@ class Pack(models.Model):
     )
     status_comments = models.TextField(blank=True)
     submitter_comments = models.TextField(blank=True)
-    tweeted = models.BooleanField(default=True)
 
     @property
     def total_views(self):

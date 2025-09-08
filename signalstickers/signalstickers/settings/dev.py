@@ -55,14 +55,6 @@ LOGGING = {
 }
 
 
-# Obtained from https://developer.twitter.com/
-TWITTER_CONF = {
-    "consumer_key": "foo",
-    "consumer_secret": "bar",
-    "access_token": "ga",
-    "access_token_secret": "bu",
-}
-
 HEADER_IP = "REMOTE_ADDR"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

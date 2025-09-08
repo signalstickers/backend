@@ -463,7 +463,7 @@ class PackTestCase(TestCase):
 
         # Second pack, status ONLINE: should be returned second by the API
         mocked_getpacklib.return_value = TestPack(
-            "Pack title 2", "Pack author 2", b"\x61\x63\x54\x4C"
+            "Pack title 2", "Pack author 2", b"\x61\x63\x54\x4c"
         )
 
         Pack.objects.new(

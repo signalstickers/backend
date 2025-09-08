@@ -1,7 +1,7 @@
 from statistics import mean, median
 
-from core.models import LOG_CLEAR_CACHES, LOG_TWEET, AdminAction, Pack, SiteStat
-from core.services import invalidate_cdn, tweet_command
+from core.models import LOG_CLEAR_CACHES, AdminAction, Pack, SiteStat
+from core.services import invalidate_cdn
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry
@@ -17,7 +17,6 @@ class AdminTriggerActionsView(View):
     def get(self, request, admin_site):
         context = dict(
             admin_site.each_context(request),
-            nb_not_tweeted=Pack.objects.not_twitteds().count(),
         )
         return render(request, "admin/trigger_actions.html", context=context)
 
@@ -58,51 +57,11 @@ class AdminTriggerActionsView(View):
                     change_message=f"Error when invalidating caches: {output}",
                 )
 
-        def tweet():
-            if not request.user.has_perm("core.trigger_tweets"):
-                raise PermissionDenied()
-
-            nb_packs_tweeted, errs = tweet_command()
-            if nb_packs_tweeted:
-                success_message = f"Packs twitted: {nb_packs_tweeted}."
-                messages.success(request, success_message)
-
-                LogEntry.objects.log_action(
-                    user_id=request.user.id,
-                    content_type_id=ContentType.objects.get_for_model(AdminAction).pk,
-                    object_id="",
-                    object_repr="",
-                    action_flag=LOG_TWEET,
-                    change_message=success_message,
-                )
-
-            else:
-                messages.error(
-                    request,
-                    format_html(
-                        "No pack has been tweeted. Errors: <code>{}</code>", errs
-                    ),
-                )
-                LogEntry.objects.log_action(
-                    user_id=request.user.id,
-                    content_type_id=ContentType.objects.get_for_model(AdminAction).pk,
-                    object_id="",
-                    object_repr="",
-                    action_flag=LOG_TWEET,
-                    change_message=f"No pack tweeted: {errs}",
-                )
-
-        if request.POST.get("action") == "cloudflareclear_and_tweet":
+        if request.POST.get("action") == "cloudflareclear":
             clear_caches()
-            tweet()
-        elif request.POST.get("action") == "cloudflareclear":
-            clear_caches()
-        elif request.POST.get("action") == "tweet":
-            tweet()
 
         context = dict(
             admin_site.each_context(request),
-            nb_not_tweeted=Pack.objects.not_twitteds().count(),
         )
 
         return render(request, "admin/trigger_actions.html", context=context)

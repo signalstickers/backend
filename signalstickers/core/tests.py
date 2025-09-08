@@ -48,7 +48,6 @@ class PackTestCase(TestCase):
             submitter_comments=self.testpack["submitter_comments"],
             tags=self.testpack["tags"],
             api_via="",
-            tweeted=False,
         )
 
         self.assertEqual(pack.pack_id, self.testpack["pack_id"])
@@ -88,7 +87,6 @@ class PackTestCase(TestCase):
             submitter_comments=self.testpack["submitter_comments"],
             tags=self.testpack["tags"],
             api_via="foo",
-            tweeted=False,
         )
 
         self.assertEqual(pack.source, f'{self.testpack["source"]} (via foo)')
@@ -196,39 +194,6 @@ class PackTestCase(TestCase):
                 status=PackStatus.IN_REVIEW.name,
                 tags=[str(i) for i in range(200)],
             )
-
-    def test_tweeted(self, mocked_getpacklib):
-        """
-        Check tweet status
-        """
-        mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
-
-        pack_not_tweeted = Pack.objects.new(
-            pack_id="a" * 32,
-            pack_key="b" * 64,
-            status=PackStatus.ONLINE.name,
-            tweeted=False,
-        )
-
-        pack_tweeted = Pack.objects.new(
-            pack_id="c" * 32,
-            pack_key="d" * 64,
-            status=PackStatus.ONLINE.name,
-            tweeted=True,
-        )
-
-        pack_not_tweeted_inreview = Pack.objects.new(
-            pack_id="e" * 32,
-            pack_key="f" * 64,
-            status=PackStatus.IN_REVIEW.name,
-            tweeted=False,
-        )
-
-        packs = Pack.objects.not_twitteds()
-
-        self.assertNotIn(pack_tweeted, packs)
-        self.assertNotIn(pack_not_tweeted_inreview, packs)
-        self.assertIn(pack_not_tweeted, packs)
 
     def test_animation_mode(self, mocked_getpacklib):
         """
@@ -420,7 +385,6 @@ class PackTestCase(TestCase):
             submitter_comments=self.testpack["submitter_comments"],
             tags=self.testpack["tags"],
             api_via="",
-            tweeted=False,
         )
 
         pack.approve()
@@ -435,13 +399,13 @@ class UtilsTestCase(TestCase):
 
         self.assertTrue(
             utils.detect_animated_pack(
-                TestPack("foo", "bar", b"\x61\x63\x54\x4C", b"\x61\x63\x54\x4C")
+                TestPack("foo", "bar", b"\x61\x63\x54\x4c", b"\x61\x63\x54\x4c")
             )
         )
 
         self.assertTrue(
             utils.detect_animated_pack(
-                TestPack("foo", "bar", b"\x61\x63\x54\x4C", b"\x47\x49\x46\x38\x39\x61")
+                TestPack("foo", "bar", b"\x61\x63\x54\x4c", b"\x47\x49\x46\x38\x39\x61")
             )
         )
 
@@ -452,7 +416,7 @@ class UtilsTestCase(TestCase):
         )
         self.assertTrue(
             utils.detect_animated_pack(
-                TestPack("foo", "bar", b"\x00\x00\x00\x00", b"\x61\x63\x54\x4C")
+                TestPack("foo", "bar", b"\x00\x00\x00\x00", b"\x61\x63\x54\x4c")
             )
         )
         self.assertFalse(

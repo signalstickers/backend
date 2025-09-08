@@ -9,5 +9,4 @@ class AdminPermissions(models.Model):
         permissions = (
             ("view_stats_page", "View stats page"),
             ("invalidate_cloudflare", "Invalidate CloudFlare caches"),
-            ("trigger_tweets", "Trigger tweets"),
         )

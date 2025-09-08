@@ -10,7 +10,6 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.utils.timezone import now
-from libs.twitter_bot import tweet_pack
 import requests
 
 logger = logging.getLogger("main")
@@ -23,35 +22,6 @@ def clear_contribution_requests():
     """
     nb_deleted, _ = ContributionRequest.objects.expired().delete()
     return nb_deleted
-
-
-def tweet_command():
-    """
-    Tweet packs tagged as 'not tweeted'
-    """
-
-    not_tweeted_packs = Pack.objects.not_twitteds()
-
-    nb_packs_twitted = 0
-    errs = []
-
-    for pack in not_tweeted_packs:
-        try:
-            logger.info("Start tweeting about %s", pack.pack_id)
-            tweet_pack(pack)
-            logger.info("Tweet about %s done", pack.pack_id)
-
-            # Set pack as "tweeted"
-            pack.tweeted = True
-            pack.save()
-            nb_packs_twitted += 1
-
-        except Exception as e:  # pylint: disable=broad-except
-            mess = f"Error while tweeting {pack.pack_id}: {e}"
-            logger.error(mess)
-            errs.append(mess)
-
-    return nb_packs_twitted, errs
 
 
 def invalidate_cdn():

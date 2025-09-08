@@ -70,7 +70,7 @@ class PackAdmin(admin.ModelAdmin):
         ("Animation", {"fields": ("animated_detected", "animated_mode", "animated")}),
         (
             "Review",
-            {"fields": ("submitter_comments", "status", "status_comments", "tweeted")},
+            {"fields": ("submitter_comments", "status", "status_comments")},
         ),
     )
     autocomplete_fields = ("tags",)
@@ -107,7 +107,6 @@ class PackAdmin(admin.ModelAdmin):
                     "animated": "This is the final animated status that will be displayed to users.",
                     "submitter_comments": "Users can leave comments when the submit a pack.",
                     "status_comments": "If needed, explain here why the pack has been refused, or almost refused.",
-                    "tweeted": "If this checkbox is checked and you uncheck it, the pack will be tweeted again. If the pack is new, check this box to prevent it from being tweeted.",
                 }
             }
         )

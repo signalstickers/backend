@@ -39,7 +39,7 @@ def detect_animated_pack(lib_pack):
     """
 
     for sticker in lib_pack.stickers:
-        if b"\x61\x63\x54\x4C" in sticker.image_data:  # APNG acTL chunk
+        if b"\x61\x63\x54\x4c" in sticker.image_data:  # APNG acTL chunk
             return True
         if sticker.image_data.startswith(
             b"\x47\x49\x46\x38\x39\x61"
