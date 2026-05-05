@@ -1,4 +1,5 @@
 from api.views import (
+    AIReviewView,
     ContributionRequestView,
     ContributionView,
     InReviewPacksView,
@@ -19,6 +20,7 @@ urlpatterns = [
     path("report/", ReportView.as_view(), name="report"),
     path("contribute/", ContributionView.as_view(), name="contribute"),
     path("admin/toreview/", InReviewPacksView.as_view(), name="packsinreview"),
+    path("admin/aireview/", AIReviewView.as_view(), name="ai_review"),
     # Contribution request
     path(
         "contributionrequest/",

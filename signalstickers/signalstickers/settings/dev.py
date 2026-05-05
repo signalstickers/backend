@@ -15,6 +15,7 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 ADMIN_URL = "admin/"
 
+AI_REVIEW_API_KEY = "api-key-for-dev"
 
 DATABASES = {
     "default": {

@@ -1,3 +1,4 @@
+from core.admin.ai_review import AIReviewAdmin
 from core.admin.api_key import ApiKeyAdmin
 from core.admin.bot_prevention_questions import BotPreventionQuestionAdmin
 from core.admin.contribution_request import ContributionRequestAdmin

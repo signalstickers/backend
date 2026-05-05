@@ -1,0 +1,25 @@
+{% if pack.ai_review.alert %}
+<b>⚠️ AI raised an alert ; review with care. ⚠️ </b>
+<br />
+<br />
+{% endif %}
+
+
+
+{% if pack.nsfw != pack.ai_review.nsfw%}
+<b>⚠️ NSFW status mismatch ⚠️</b>; AI recommends NSFW={{pack.ai_review.nsfw}}
+<br />
+<br />
+{% endif %}
+
+{% if not pack.ai_review.tags_match%}
+<b>⚠️ Tags mismatch ⚠️</b>
+<br />
+<br />
+{% endif %}
+
+
+Recommendation : {% if pack.ai_review.status == "ACCEPT" %}Accept ✅ {% else %}<b> ❌ Refuse ❌</b>{%endif %}
+<br />
+<small>Review self-confidence: {{pack.ai_review.confidence}}</small>
+{% if pack.ai_review.confidence < 0.75 %} ⚠️ {% endif %}

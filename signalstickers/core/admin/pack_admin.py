@@ -4,6 +4,7 @@ from core.models import Pack, PackStatus
 from django.contrib import admin
 from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -61,6 +62,22 @@ class PackAdmin(admin.ModelAdmin):
     # Custom view to display stickers images
     change_form_template = "admin/change_form_pack.html"
 
+    def _ai_review_statuses(self, obj):
+
+        if not obj.ai_review:
+            return None
+
+        tpl = render_to_string("admin/ai_review_partial.html", {"pack": obj})
+
+        return mark_safe(tpl)  # nosec
+
+    _ai_review_statuses.short_description = "Hints"
+
+    def _ai_review_comments(self, obj):
+        return obj.ai_review.review_comment
+
+    _ai_review_comments.short_description = "Comments"
+
     fieldsets = (
         ("Pack info", {"fields": ("pack_id", "pack_key", "title", "author")}),
         (
@@ -72,7 +89,12 @@ class PackAdmin(admin.ModelAdmin):
             "Review",
             {"fields": ("submitter_comments", "status", "status_comments")},
         ),
+        (
+            "Hints from AI review",
+            {"fields": ("_ai_review_statuses", "_ai_review_comments")},
+        ),
     )
+
     autocomplete_fields = ("tags",)
     readonly_fields = (
         "title",
@@ -80,6 +102,8 @@ class PackAdmin(admin.ModelAdmin):
         "animated_detected",
         "animated",
         "submitter_comments",
+        "_ai_review_statuses",
+        "_ai_review_comments",
     )
     actions = ("bulk_review_packs",)
 

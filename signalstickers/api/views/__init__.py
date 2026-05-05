@@ -1,3 +1,4 @@
+from api.views.ai_review_view import AIReviewView
 from api.views.contribution_request_view import ContributionRequestView
 from api.views.contribution_view import ContributionView
 from api.views.in_review_packs_view import InReviewPacksView

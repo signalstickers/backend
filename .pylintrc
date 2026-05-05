@@ -16,10 +16,13 @@ disable=
     fixme,
     too-many-positional-arguments,
     duplicate-code, # FIXME remove when apiv1 is retired
+    too-many-lines,
+    
 
 load-plugins=pylint_django
 django-settings-module=signalstickers.settings.dev
 ignore-paths=.*/migrations
+ignored-modules=signalstickers.settings.dev
 
 good-names =
     i,

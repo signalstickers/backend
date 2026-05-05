@@ -1,3 +1,4 @@
+from api.serializers.ai_review_request_serializer import AIReviewRequestSerializer
 from api.serializers.contribution_request_serializer import (
     ContributionRequestSerializer,
 )

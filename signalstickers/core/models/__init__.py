@@ -1,4 +1,5 @@
 from core.models.admin_permissions import AdminPermissions
+from core.models.ai_review import AIReview, AIReviewStatus
 from core.models.api_key import ApiKey
 from core.models.bot_prevention_questions import BotPreventionQuestion
 from core.models.contribution_request import ContributionRequest

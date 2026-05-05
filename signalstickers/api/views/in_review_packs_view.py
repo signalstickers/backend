@@ -1,6 +1,6 @@
-from django.conf import settings
 from api.serializers import InReviewPackSerializer
 from core.models import Pack
+from django.conf import settings
 from rest_framework import parsers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView

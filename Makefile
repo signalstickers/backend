@@ -24,3 +24,8 @@ test:
 	./manage.py test
 
 check: lint sec test
+
+fix:
+	pylint ${SRC_DIR} --rcfile .pylintrc
+	black  ${SRC_DIR} --exclude 'migrations'
+	isort --sp .isort.cfg ${SRC_DIR}
