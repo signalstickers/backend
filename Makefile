@@ -17,7 +17,7 @@ lint:
 	isort --sp .isort.cfg --check ${SRC_DIR}
 
 sec:
-	bandit --ini .bandit -x ${SRC_DIR}/signalstickers/settings/dev.py -r ${SRC_DIR}
+	bandit --ini .bandit -r ${SRC_DIR}
 
 test:
 	cd signalstickers/ ; \

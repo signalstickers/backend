@@ -36,6 +36,14 @@ class PackManager(models.Manager):
         """
         return Pack.objects.filter(status="IN_REVIEW")
 
+    def in_review_with_tags(self):
+        """
+        Return IN_REVIEW packs with tags prefetched (alphabetically ordered).
+        """
+        return Pack.objects.filter(status=PackStatus.IN_REVIEW.name).prefetch_related(
+            Prefetch("tags", queryset=Tag.objects.all().order_by("name"))
+        )
+
     def in_review_count(self):
         """
         Return packs count with status "IN REVIEW".

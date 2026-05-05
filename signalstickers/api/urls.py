@@ -1,6 +1,7 @@
 from api.views import (
     ContributionRequestView,
     ContributionView,
+    InReviewPacksView,
     PacksView,
     ReportView,
     StatsPingView,
@@ -17,6 +18,7 @@ urlpatterns = [
     path("packs/status/", StatusView.as_view(), name="packstatus"),
     path("report/", ReportView.as_view(), name="report"),
     path("contribute/", ContributionView.as_view(), name="contribute"),
+    path("admin/toreview/", InReviewPacksView.as_view(), name="packsinreview"),
     # Contribution request
     path(
         "contributionrequest/",

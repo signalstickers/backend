@@ -1,6 +1,7 @@
 from api.serializers.contribution_request_serializer import (
     ContributionRequestSerializer,
 )
+from api.serializers.in_review_pack_serializer import InReviewPackSerializer
 from api.serializers.pack_request_serializer import (
     APIPackRequestSerializer,
     PackRequestSerializer,
