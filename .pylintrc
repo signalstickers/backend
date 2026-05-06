@@ -21,8 +21,7 @@ disable=
 
 load-plugins=pylint_django
 django-settings-module=signalstickers.settings.dev
-ignore-paths=.*/migrations
-ignored-modules=signalstickers.settings.dev
+ignore-paths=.*/migrations,signalstickers/signalstickers/settings
 
 good-names =
     i,

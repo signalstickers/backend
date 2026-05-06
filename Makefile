@@ -23,7 +23,7 @@ test:
 	cd signalstickers/ ; \
 	./manage.py test
 
-check: lint sec test
+check: test lint sec 
 
 fix:
 	pylint ${SRC_DIR} --rcfile .pylintrc

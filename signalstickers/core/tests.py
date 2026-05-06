@@ -472,8 +472,7 @@ class YmlImportCommandTest(TestCase):
         out = StringIO()
 
         with tempfile.NamedTemporaryFile() as f_in:
-            f_in.write(
-                f"""\
+            f_in.write(f"""\
 {'a'*32}:
   key: {'b'*64}
   source: src
@@ -486,8 +485,7 @@ class YmlImportCommandTest(TestCase):
   key: {'d'*64}
   nsfw: False
   original: true
-""".encode()
-            )
+""".encode())
             f_in.seek(0)
 
             call_command("import_from_yml", f_in.name, stdout=out)
@@ -524,13 +522,11 @@ class YmlImportCommandTest(TestCase):
         )
 
         with tempfile.NamedTemporaryFile() as f_in:
-            f_in.write(
-                f"""\
+            f_in.write(f"""\
 {'a'*32}:
   key: {'b'*64}
   nsfw: true
-""".encode()
-            )
+""".encode())
             f_in.seek(0)
 
             call_command("import_from_yml", f_in.name, stdout=out)
@@ -559,13 +555,11 @@ class YmlImportCommandTest(TestCase):
 
         mocked_getpacklib.return_value = None
         with tempfile.NamedTemporaryFile() as f_in:
-            f_in.write(
-                f"""\
+            f_in.write(f"""\
 {'a'*32}:
   key: {'b'*64}
   nsfw: true
-""".encode()
-            )
+""".encode())
             f_in.seek(0)
 
             call_command("import_from_yml", f_in.name, stdout=out)

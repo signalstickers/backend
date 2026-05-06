@@ -15,8 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *_, **options):
 
-        print(
-            """
+        print("""
                 #################
                 #### WARNING ####
                 #################
@@ -24,8 +23,7 @@ class Command(BaseCommand):
 This command will DELETE AND REPLACE ALL EXISTING STATS
 ON THE APPLICATION. Use it WITH CAUTION.
 
-"""
-        )
+""")
 
         reply = str(
             input("Are you sure you want to continue? Type 'yes replace all': ")
