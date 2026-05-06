@@ -16,5 +16,8 @@ class InReviewPacksView(APIView):
                 {"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED
             )
         packs = Pack.objects.in_review_with_tags().order_by("id")
+
+        if "only_noaireview" in request.query_params.keys():
+            packs = packs.filter(ai_review__isnull=True)
         serializer = InReviewPackSerializer(packs, many=True)
         return Response(serializer.data)
