@@ -22,7 +22,7 @@ You'll then be able to use `signalstickers/manage.py` (e.g.
 - Run bandit: `pipenv run sec`
 - Run the 3 above: `pipenv run check` (**run it before commiting**, as this is
   run by Github)
-- Update `requirements.txt`: `pipenv lock -r > requirements.txt`
+- Update `requirements.txt`: `pipenv requirements > requirements.txt`
 
 ### Docker
 
