@@ -36,7 +36,7 @@ class AdminAction(models.Model):
             last_cleared_date = (
                 LogEntry.objects.filter(
                     action_flag=LOG_CLEAR_CACHES,
-                    change_message__icontains='"success": true',
+                    change_message__icontains='"success":true',
                 )
                 .order_by("action_time")
                 .last()
