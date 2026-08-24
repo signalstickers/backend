@@ -1,33 +1,4 @@
-from datetime import date, timedelta
-from urllib.parse import urlparse
-
-import anyio
 from django.core.exceptions import ValidationError
-from signalstickers_client import StickersClient
-
-
-def get_current_ym_date():
-    return date.today().strftime("%Y_%m")
-
-
-def get_last_month_ym_date():
-    return (date.today().replace(day=1) - timedelta(days=1)).strftime("%Y_%m")
-
-
-def get_pack_from_signal(pack_id, pack_key):  # pragma: no cover
-    """
-    Simple async -> sync wrapper around StickersClient.
-    """
-
-    async def _get_pack(pack_id, pack_key):
-        async with StickersClient() as client:
-            pack = await client.get_pack(pack_id, pack_key)
-        return pack
-
-    try:
-        return anyio.run(_get_pack, pack_id, pack_key)
-    except:  # pylint: disable=bare-except
-        return None
 
 
 def detect_animated_pack(lib_pack):
@@ -54,11 +25,3 @@ def detect_animated_pack(lib_pack):
                 "Animated WebP are invalid; this pack can not be added."
             )
     return False
-
-
-def is_url(str_in):
-    try:
-        result = urlparse(str_in)
-        return all([result.scheme, result.netloc])
-    except:  # pylint: disable=bare-except
-        return False
