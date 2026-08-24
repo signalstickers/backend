@@ -2,8 +2,8 @@ from base64 import b64encode
 import re
 
 from core.models.pack_animated_mode import PackAnimatedMode
+from core.models.pack_manager import PackManager
 from core.models.pack_status import PackStatus
-from core.models.tag import Tag
 from core.utils import (
     detect_animated_pack,
     get_current_ym_date,
@@ -12,156 +12,24 @@ from core.utils import (
 )
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.db import models, transaction
-from django.db.models import Prefetch, Sum
-from django.db.models.expressions import RawSQL
+from django.db import models
+
+PACK_ID_REGEX = r"^[a-z0-9]{32}$"
+PACK_ID_ERROR = "Pack id must be 32, lowercase and numbers."
+PACK_KEY_REGEX = r"^[a-z0-9]{64}$"
+PACK_KEY_ERROR = "Pack key must be 64, lowercase and numbers."
 
 
-class PackManager(models.Manager):
-    def onlines(self):
-        """
-        Return only packs "ONLINE", last packs first.
-        """
-        return (
-            Pack.objects.filter(status=PackStatus.ONLINE.name).order_by("-id")
-            # .prefetch_related("tags")
-            .prefetch_related(
-                Prefetch("tags", queryset=Tag.objects.all().order_by("name"))
-            )
-        )
-
-    def in_review(self):
-        """
-        Return packs with status "IN REVIEW".
-        """
-        return Pack.objects.filter(status="IN_REVIEW")
-
-    def in_review_with_tags(self):
-        """
-        Return IN_REVIEW packs with tags prefetched (alphabetically ordered).
-        """
-        return Pack.objects.filter(status=PackStatus.IN_REVIEW.name).prefetch_related(
-            Prefetch("tags", queryset=Tag.objects.all().order_by("name"))
-        )
-
-    def in_review_count(self):
-        """
-        Return packs count with status "IN REVIEW".
-        """
-        return Pack.objects.in_review().count()
-
-    def escalated(self):
-        """
-        Return packs with status "ESCALATED".
-        """
-        return Pack.objects.filter(status="ESCALATED")
-
-    def escalated_count(self):
-        """
-        Return packs count with status "ESCALATED".
-        """
-        return Pack.objects.escalated().count()
-
-    def most_popular_for_month(self, month, nbr=10):
-        """
-        Return the top `nbr` packs for a given `month` (YYYY_MM)
-        """
-        return (
-            Pack.objects.filter(stats__has_key=month)
-            .annotate(stats_month=RawSQL("stats->%s", (month,)))
-            .order_by("-stats_month")[:nbr]
-        )
-
-    def total_packviews_for_month(self, month):
-        """
-        Return the total pack views for a given `month` (YYYY_MM)
-        """
-        return (
-            Pack.objects.filter(stats__has_key=month)
-            .annotate(views_month=RawSQL("(stats->%s)::INTEGER", (month,)))
-            .aggregate(Sum("views_month"))["views_month__sum"]
-        )
-
-    def most_viewed_packs(self, nbr=10):
-        """
-        Return the `nbr` most viewed packs ever
-        """
-        # TODO do this with aggregation in DB
-        packs = Pack.objects.all()
-        all_packs_sumviews = []
-        for pack in packs:
-            all_packs_sumviews.append({"pack": pack, "views": sum(pack.stats.values())})
-
-        return sorted(all_packs_sumviews, key=lambda k: k["views"], reverse=True)[:nbr]
-
-    def total_packviews(self):
-        """
-        Return pack views by month for all month
-        """
-        # TODO do this with aggregation in DB
-        stats = Pack.objects.all().values("stats")
-        stats_month = {}
-        for pack_stats in stats:
-            for month, stats in pack_stats["stats"].items():
-                if month in stats_month:
-                    stats_month[month] += stats
-                else:
-                    stats_month[month] = stats
-        return stats_month
-
-    def new(
-        self,
-        pack_id,
-        pack_key,
-        status,
-        source="",
-        nsfw=False,
-        original=False,
-        submitter_comments="",
-        tags=None,
-        api_via="",
-        editorschoice=False,
-    ):
-        """
-        Create a new pack with validation, save it, and return it. Use this
-        function instead of create(), as this one also create related tags
-        properly. Return the pack which has been created.
-        """
-
-        if api_via:
-            source = source.strip() + f" (via {api_via})"
-        else:
-            source = source.strip()
-
-        tags = tags or []
-        if len(tags) > 40:
-            raise ValidationError("Too many tags (max 40).")
-
-        pack = Pack(
-            pack_id=pack_id.strip(),
-            pack_key=pack_key.strip(),
-            source=source,
-            status=status,
-            nsfw=nsfw,
-            original=original,
-            submitter_comments=submitter_comments,
-            editorschoice=editorschoice,
-        )
-
-        pack.clean()
-
-        with transaction.atomic():
-            pack.save()
-
-            tags_obj_list = []
-            for tag in tags:
-                tag_obj, _ = Tag.objects.get_or_create(name=tag.lower())
-                tags_obj_list.append(tag_obj)
-
-            if tags_obj_list:
-                pack.tags.add(*tags_obj_list)
-
-        return pack
+def _resolve_animated_mode(animated_mode, animated_detected):
+    """
+    Return the final animated status of a pack, based on its animated mode
+    and whether animation was detected in its stickers.
+    """
+    if animated_mode == PackAnimatedMode.AUTO.name:
+        return animated_detected
+    if animated_mode == PackAnimatedMode.FORCE_ANIMATED.name:
+        return True
+    return False
 
 
 class Pack(models.Model):
@@ -173,8 +41,8 @@ class Pack(models.Model):
         unique=True,
         validators=[
             RegexValidator(
-                regex="^[a-z0-9]{32}$",
-                message="Pack id must be 32, lowercase and numbers.",
+                regex=PACK_ID_REGEX,
+                message=PACK_ID_ERROR,
                 code="nomatch",
             )
         ],
@@ -183,8 +51,8 @@ class Pack(models.Model):
         max_length=64,
         validators=[
             RegexValidator(
-                regex="^[a-z0-9]{64}$",
-                message="Pack key must be 64, lowercase and numbers.",
+                regex=PACK_KEY_REGEX,
+                message=PACK_KEY_ERROR,
                 code="nomatch",
             )
         ],
@@ -249,13 +117,12 @@ class Pack(models.Model):
         return self.title
 
     def clean(self):
-
         # Basic validation
-        if not re.match(r"^[a-z0-9]{32}$", self.pack_id):
-            raise ValidationError("Pack id must be 32, lowercase and numbers.")
+        if not re.match(PACK_ID_REGEX, self.pack_id):
+            raise ValidationError(PACK_ID_ERROR)
 
-        if not re.match(r"^[a-z0-9]{64}$", self.pack_key):
-            raise ValidationError("Pack key must be 64, lowercase and numbers.")
+        if not re.match(PACK_KEY_REGEX, self.pack_key):
+            raise ValidationError(PACK_KEY_ERROR)
 
         if len(self.source) > 256:
             raise ValidationError("Source too long.")
@@ -277,12 +144,9 @@ class Pack(models.Model):
 
         # Animation
         self.animated_detected = detect_animated_pack(pack)
-        if self.animated_mode == PackAnimatedMode.AUTO.name:
-            self.animated = self.animated_detected
-        elif self.animated_mode == PackAnimatedMode.FORCE_ANIMATED.name:
-            self.animated = True
-        else:
-            self.animated = False
+        self.animated = _resolve_animated_mode(
+            self.animated_mode, self.animated_detected
+        )
 
     @property
     def stickers_preview(self):  # pragma: no cover
