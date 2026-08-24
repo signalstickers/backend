@@ -8,14 +8,14 @@ Backend for signalstickers.org: a moderation tool where third parties propose Si
 
 ## Commands
 
-| Task                          | Command            |
-| ----------------------------- | ------------------ |
-| Test (enforces ≥70% coverage) | `pipenv run test`  |
-| Lint (pylint + black + isort) | `pipenv run lint`  |
-| Bandit security scan          | `pipenv run sec`   |
-| All of the above              | `pipenv run check` |
-| Auto-fix formatting           | `make fix`         |
-| Any python command            | Use the venv       |
+| Task                          | Command            | Comment                                   |
+| ----------------------------- | ------------------ | ----------------------------------------- |
+| Test (enforces ≥70% coverage) | `pipenv run test`  |                                           |
+| Lint (pylint + black + isort) | `pipenv run lint`  |                                           |
+| Bandit security scan          | `pipenv run sec`   |                                           |
+| All of the above              | `pipenv run check` | Fails on error. Return code 0 == all good |
+| Auto-fix formatting           | `pipenv run fix`   |                                           |
+| Any python command            | Use the venv       | e.g. `pipenv run python --version`        |
 
 ## External References
 

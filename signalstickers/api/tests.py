@@ -120,6 +120,40 @@ class ContributionTestCase(TestCase):
         )
         self.assertEqual(pack.submitter_comments, "Thanks")
 
+    def test_propose_pack_editorschoice_ignored(self, mocked_getpacklib):
+        """
+        A submitter must not be able to set the "editorschoice" flag.
+        """
+
+        mocked_getpacklib.return_value = TestPack("Pack title", "Pack author", b"\x00")
+
+        contrib_req = new_contribution_request("10.0.0.42")
+
+        response = self.client.put(
+            reverse("api_v1:contribute"),
+            {
+                "pack": {
+                    "pack_id": "a" * 32,
+                    "pack_key": "b" * 64,
+                    "source": "source.example.com",
+                    "tags": ["Foo"],
+                    "nsfw": False,
+                    "original": False,
+                    "editorschoice": True,
+                },
+                "contribution_id": contrib_req.id,
+                "contribution_answer": contrib_req.question.answer,
+            },
+            content_type="application/json",
+            REMOTE_ADDR="10.0.0.42",
+        )
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual({"success": True}, response.data)
+
+        pack = Pack.objects.get()
+        self.assertFalse(pack.editorschoice)
+
     def test_propose_pack_api_key(self, mocked_getpacklib):
         """
         Valid Pack request with API key

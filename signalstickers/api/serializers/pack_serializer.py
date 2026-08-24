@@ -22,7 +22,6 @@ class PackSerializer(serializers.ModelSerializer):
             "tags",
             "nsfw",
             "original",
-            "editorschoice",
         )
 
     def to_representation(self, instance):
