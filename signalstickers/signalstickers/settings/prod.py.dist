@@ -72,5 +72,9 @@ EMAIL_HOST_PASSWORD = "FIXME"
 EMAIL_USE_SSL = True
 EMAIL_TIMEOUT = 5
 
+# ntfy notifications (leave NTFY_SERVER_URL empty to disable)
+NTFY_SERVER_URL = "FIXME"
+NTFY_AUTH_TOKEN = "FIXME"
+
 if SECRET_KEY == "FIXME" or DEBUG == True :
     exit("Error: set appropriate prod values in settings/prod.py")

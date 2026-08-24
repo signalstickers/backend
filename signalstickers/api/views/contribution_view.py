@@ -2,6 +2,7 @@ import logging
 
 from api.serializers import APIPackRequestSerializer, PackRequestSerializer
 from core.models import Pack, PackStatus
+from core.notifications import NotificationPriority, notify
 from core.services import (
     check_api_key,
     check_contribution_request,
@@ -91,6 +92,13 @@ class ContributionView(APIView):
 
             logger.info("Created new pack (from contribution): %s", pack.title)
             send_email_on_pack_propose(pack)
+            notify(
+                "signalstickers-packs",
+                "New pack proposed",
+                f"New pack proposed: {pack.title} by {pack.author}",
+                priority=NotificationPriority.LOW,
+                click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
+            )
             return Response({"success": bool(pack)})
 
         except ApiException as api_err:

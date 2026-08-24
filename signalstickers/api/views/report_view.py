@@ -1,5 +1,6 @@
 from api.serializers import ReportSerializer
 from core.models import Pack, Report
+from core.notifications import NotificationPriority, notify
 from core.services import check_contribution_request
 from django.conf import settings
 from rest_framework import parsers, status
@@ -40,6 +41,14 @@ class ReportView(APIView):
             report = Report.objects.create(
                 content=req_srl.validated_data["content"],
                 pack=pack,
+            )
+
+            notify(
+                "signalstickers-packs",
+                "Pack reported",
+                f"Pack reported: {pack.title}",
+                priority=NotificationPriority.HIGH,
+                click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
             )
 
             return Response({"success": bool(report)})

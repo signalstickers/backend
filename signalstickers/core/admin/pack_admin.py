@@ -1,6 +1,7 @@
 from urllib.parse import parse_qsl, urlencode
 
 from core.models import Pack, PackStatus
+from core.services import notify_pack_escalated
 from django.contrib import admin
 from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m
 from django.shortcuts import redirect
@@ -176,6 +177,7 @@ class PackAdmin(admin.ModelAdmin):
     @csrf_protect_m
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         # Classic pack we need to approve automatically
+
         if request.method == "POST" and any(
             key in ["_approve", "_refuse", "_escalate"] for key in request.POST.keys()
         ):
@@ -188,11 +190,20 @@ class PackAdmin(admin.ModelAdmin):
             elif "_escalate" in request.POST:
                 posted_data["status"] = "ESCALATED"
 
+            previous_status = Pack.objects.get(pk=object_id).status
             request.POST = posted_data
             # Save all fields
             super().changeform_view(
                 request, object_id, form_url, extra_context=extra_context
             )
+
+            if (
+                "_escalate" in request.POST
+                and previous_status != PackStatus.ESCALATED.name
+            ):
+                notify_pack_escalated(
+                    Pack.objects.get(pk=object_id), request.user.username
+                )
 
             # Once the pack is saved and status changed to approved
             # redirect to previous page with correct url params
@@ -212,11 +223,18 @@ class PackAdmin(admin.ModelAdmin):
             elif "_escalate_continue" in request.POST:
                 posted_data["status"] = "ESCALATED"
 
+            prev_pack_obj = Pack.objects.get(pk=object_id)
             request.POST = posted_data
             # Save all fields
             super().changeform_view(
                 request, object_id, form_url, extra_context=extra_context
             )
+
+            if (
+                "_escalate_continue" in request.POST
+                and prev_pack_obj.status != PackStatus.ESCALATED.name
+            ):
+                notify_pack_escalated(prev_pack_obj, request.user.username)
 
             # Redirect to the next pack
             next_ids = request.POST.get("_bulkreview_next") or "__last"

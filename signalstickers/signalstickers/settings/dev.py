@@ -1,6 +1,10 @@
 import os
 
+from dotenv import load_dotenv
+
 from signalstickers.settings.common import *  # pylint: disable=unused-wildcard-import,wildcard-import
+
+load_dotenv()
 
 SECRET_KEY = "dev_secret_key"
 
@@ -60,3 +64,7 @@ HEADER_IP = "REMOTE_ADDR"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_FROM = '"Signalstickers" <Signalstickers@example.com>'
+
+# ntfy notifications (leave NTFY_SERVER_URL empty to disable)
+NTFY_SERVER_URL = os.environ.get("NTFY_SERVER_URL")
+NTFY_AUTH_TOKEN = os.environ.get("NTFY_AUTH_TOKEN")

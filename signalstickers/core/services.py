@@ -3,9 +3,9 @@ import logging
 import random
 import re
 
-from core.models import ApiKey, BotPreventionQuestion, ContributionRequest, Pack
+from core.models import ApiKey, BotPreventionQuestion, ContributionRequest
+from core.notifications import NotificationPriority, notify
 from django.conf import settings
-from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
@@ -80,61 +80,34 @@ Comment:
         logger.error("Error sending e-mail: %s", ex)
 
 
-def send_email_pack_escalated():
+def notify_pack_escalated(pack, username):
     """
-    Send an email to the users in group `email_notification_on_escalated`)
+    Send a HIGH-priority ntfy notification when a pack is escalated.
     """
-
-    # Recipients
-    user_model = get_user_model()
-    recipients = user_model.objects.filter(
-        groups__name="email_notification_on_escalated"
-    ).values_list("email", flat=True)
-
-    # Packs
-    escalated_packs = (
-        Pack.objects.escalated().order_by("id").values_list("id", flat=True)
-    )
-    packs_changed_yesterday = (
-        LogEntry.objects.filter(
-            action_time__date=datetime.datetime.today() - datetime.timedelta(days=1)
-        )
-        .filter(content_type__model="pack")
-        .order_by("object_id")
-        .distinct("object_id")
-        .values_list("object_id", flat=True)
+    logger.info("Pack %s (%s) escalated", pack.title, pack.pack_id)
+    notify(
+        "signalstickers-admin",
+        "Escalated pack",
+        f"Pack '{pack.title}' escalated by {username}, please review",
+        priority=NotificationPriority.HIGH,
+        tags=["arrow_heading_up"],
+        click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
     )
 
-    nb_packs_escalated_yesterday = len(
-        [
-            pack_id
-            for pack_id in escalated_packs
-            if str(pack_id) in packs_changed_yesterday
-        ]
+
+def notify_admin_login(username, client_ip):
+    """
+    Send a ntfy notification when an admin user logs into the admin panel.
+    """
+    logger.info("Admin login: %s from %s", username, client_ip)
+    notify(
+        "signalstickers-admin",
+        "Admin login",
+        f"Admin '{username}' logged in from {client_ip}",
+        priority=NotificationPriority.DEFAULT,
+        tags=["lock"],
+        click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
     )
-
-    if not nb_packs_escalated_yesterday:
-        logger.info("No pack escalated yesterday")
-        return
-
-    logger.info("%i pack escalated yesterday", nb_packs_escalated_yesterday)
-    message = f"""\
-Hello! 👋
-
-{nb_packs_escalated_yesterday} have been escalated today. Please review!
-
-"""
-    email = EmailMessage(
-        f"{nb_packs_escalated_yesterday} escalated packs",
-        message,
-        settings.EMAIL_FROM,
-        [],  # to
-        list(recipients),  # bcc
-    )
-    try:
-        email.send()
-    except Exception as ex:  # pylint: disable=broad-except
-        logger.error("Error sending e-mail: %s", ex)
 
 
 def new_contribution_request(client_ip):
