@@ -55,6 +55,5 @@ class LogEntryAdmin(admin.ModelAdmin):
                 link = "N/A"
         return link
 
-    object_link.allow_tags = True
     object_link.admin_order_field = "object_repr"
     object_link.short_description = "object"

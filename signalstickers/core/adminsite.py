@@ -1,7 +1,6 @@
 import logging
 
 from core.notifications import NotificationPriority, notify
-from core.views import AdminStatsView, AdminTriggerActionsView
 from django.conf import settings
 from django.contrib.admin import AdminSite
 from django.urls import path
@@ -29,6 +28,11 @@ class CustomAdmin(AdminSite):
         return response
 
     def get_urls(self):
+        # Imported here (not at module level) to avoid a circular import:
+        # core.admin's @admin.register triggers the import of this module.
+        # pylint: disable=import-outside-toplevel
+        from core.admin.views import AdminStatsView, AdminTriggerActionsView
+
         urls = super().get_urls()
         my_urls = [
             path(

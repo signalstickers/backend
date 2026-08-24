@@ -1,12 +1,12 @@
 import logging
 from urllib.parse import parse_qsl, urlencode
 
+from core.admin.bulk_review import LAST_PACK, parse_next_ids, redirect_to_next_pack
 from core.models import Pack, PackStatus
 from core.notifications import NotificationPriority, notify
-from django.conf import settings
+from core.utils import admin_url
 from django.contrib import admin
 from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m
-from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import format_html
@@ -112,6 +112,36 @@ class PackAdmin(admin.ModelAdmin):
     )
     actions = ("bulk_review_packs",)
 
+    # POST button name -> PackStatus name, for the single and continue review flows
+    _STATUS_BY_POST_KEY = {
+        "_approve": PackStatus.ONLINE.name,
+        "_refuse": PackStatus.REFUSED.name,
+        "_escalate": PackStatus.ESCALATED.name,
+        "_approve_continue": PackStatus.ONLINE.name,
+        "_refuse_continue": PackStatus.REFUSED.name,
+        "_escalate_continue": PackStatus.ESCALATED.name,
+    }
+    _SINGLE_REVIEW_KEYS = ("_approve", "_refuse", "_escalate")
+
+    @staticmethod
+    def _status_from_post(post):
+        for post_key, status in PackAdmin._STATUS_BY_POST_KEY.items():
+            if post_key in post:
+                return status
+        return None
+
+    @staticmethod
+    def _notify_escalation(pack, username):
+        logger.info("Pack %s (%s) escalated", pack.title, pack.pack_id)
+        notify(
+            "signalstickers-admin",
+            "Escalated pack",
+            f"Pack '{pack.title}' escalated by {username}, please review",
+            priority=NotificationPriority.HIGH,
+            tags=["arrow_heading_up"],
+            click_url=admin_url(),
+        )
+
     @staticmethod
     def _redirect_after_review(request):
         remaining_packs = Pack.objects.in_review_count()
@@ -166,123 +196,74 @@ class PackAdmin(admin.ModelAdmin):
         ]
         pack_ids.remove(object_id)  # remove current object from the list
 
-        # create the GET parameters
-        params_dict = {
-            "_changelist_filters": urlencode(request.GET),
-            "_bulkreview_next": ",".join(pack_ids) or "__last",
-        }
-        params = urlencode(params_dict)
+        return redirect_to_next_pack(object_id, pack_ids, urlencode(request.GET))
 
-        return redirect(
-            reverse("admin:core_pack_change", kwargs={"object_id": object_id})
-            + f"?{params}"
+    def _review_single(self, request, object_id, form_url, extra_context):
+        # Classic pack review: save the form with the posted status, then stop
+        posted_data = request.POST.copy()
+        status = self._status_from_post(request.POST)
+        if status is not None:
+            posted_data["status"] = status
+
+        previous_status = Pack.objects.get(pk=object_id).status
+        request.POST = posted_data
+        # Save all fields
+        super().changeform_view(
+            request, object_id, form_url, extra_context=extra_context
+        )
+
+        if "_escalate" in request.POST and previous_status != PackStatus.ESCALATED.name:
+            self._notify_escalation(
+                Pack.objects.get(pk=object_id), request.user.username
+            )
+
+        # Once the pack is saved and status changed to approved
+        # redirect to previous page with correct url params
+        return self._redirect_after_review(request)
+
+    def _review_continue(self, request, object_id, form_url, extra_context):
+        # Bulk session: save the form with the posted status, then move on
+        posted_data = request.POST.copy()
+        status = self._status_from_post(request.POST)
+        if status is not None:
+            posted_data["status"] = status
+
+        previous_pack = Pack.objects.get(pk=object_id)
+        request.POST = posted_data
+        # Save all fields
+        super().changeform_view(
+            request, object_id, form_url, extra_context=extra_context
+        )
+
+        if (
+            "_escalate_continue" in request.POST
+            and previous_pack.status != PackStatus.ESCALATED.name
+        ):
+            self._notify_escalation(previous_pack, request.user.username)
+
+        # Redirect to the next pack
+        remaining_ids = parse_next_ids(request.POST.get("_bulkreview_next"))
+        if not remaining_ids:
+            return self._redirect_after_review(request)
+        return redirect_to_next_pack(
+            remaining_ids[0], remaining_ids[1:], request.GET.get("_changelist_filters")
         )
 
     @csrf_protect_m
     def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
-        # Classic pack we need to approve automatically
-
-        if request.method == "POST" and any(
-            key in ["_approve", "_refuse", "_escalate"] for key in request.POST.keys()
-        ):
-
-            posted_data = request.POST.copy()
-            if "_approve" in request.POST:
-                posted_data["status"] = "ONLINE"
-            elif "_refuse" in request.POST:
-                posted_data["status"] = "REFUSED"
-            elif "_escalate" in request.POST:
-                posted_data["status"] = "ESCALATED"
-
-            previous_status = Pack.objects.get(pk=object_id).status
-            request.POST = posted_data
-            # Save all fields
-            super().changeform_view(
-                request, object_id, form_url, extra_context=extra_context
-            )
-
-            if (
-                "_escalate" in request.POST
-                and previous_status != PackStatus.ESCALATED.name
-            ):
-                pack_obj = Pack.objects.get(pk=object_id)
-                logger.info("Pack %s (%s) escalated", pack_obj.title, pack_obj.pack_id)
-                notify(
-                    "signalstickers-admin",
-                    "Escalated pack",
-                    f"Pack '{pack_obj.title}' escalated by {request.user.username}, please review",
-                    priority=NotificationPriority.HIGH,
-                    tags=["arrow_heading_up"],
-                    click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
+        if request.method == "POST":
+            if any(key in self._SINGLE_REVIEW_KEYS for key in request.POST.keys()):
+                return self._review_single(request, object_id, form_url, extra_context)
+            if any("_continue" in key for key in request.POST.keys()):
+                return self._review_continue(
+                    request, object_id, form_url, extra_context
                 )
-
-            # Once the pack is saved and status changed to approved
-            # redirect to previous page with correct url params
-            return self._redirect_after_review(request)
-
-        # Bulk session : we want to do something but redirect to the next pack afterwards
-        if request.method == "POST" and any(
-            "_continue" in key for key in request.POST.keys()
-        ):
-
-            posted_data = request.POST.copy()
-
-            if "_approve_continue" in request.POST:
-                posted_data["status"] = "ONLINE"
-            elif "_refuse_continue" in request.POST:
-                posted_data["status"] = "REFUSED"
-            elif "_escalate_continue" in request.POST:
-                posted_data["status"] = "ESCALATED"
-
-            prev_pack_obj = Pack.objects.get(pk=object_id)
-            request.POST = posted_data
-            # Save all fields
-            super().changeform_view(
-                request, object_id, form_url, extra_context=extra_context
-            )
-
-            if (
-                "_escalate_continue" in request.POST
-                and prev_pack_obj.status != PackStatus.ESCALATED.name
-            ):
-                logger.info(
-                    "Pack %s (%s) escalated",
-                    prev_pack_obj.title,
-                    prev_pack_obj.pack_id,
-                )
-                notify(
-                    "signalstickers-admin",
-                    "Escalated pack",
-                    f"Pack '{prev_pack_obj.title}' escalated by {request.user.username}, please review",
-                    priority=NotificationPriority.HIGH,
-                    tags=["arrow_heading_up"],
-                    click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
-                )
-
-            # Redirect to the next pack
-            next_ids = request.POST.get("_bulkreview_next") or "__last"
-            if next_ids == "__last":
-                return self._redirect_after_review(request)
-
-            remaining_ids = next_ids.split(",")
-            object_id = remaining_ids[0]
-            # Create the GET parameters
-            params_dict = {
-                "_changelist_filters": request.GET.get("_changelist_filters"),
-                "_bulkreview_next": ",".join(remaining_ids[1:]) or "__last",
-            }
-            # add next ids in parameters without the current object id
-            params = urlencode(params_dict)
-
-            return redirect(
-                reverse("admin:core_pack_change", kwargs={"object_id": str(object_id)})
-                + f"?{params}"
-            )
 
         if request.method == "GET" and "_bulkreview_next" in request.GET:
             # In case of a bulk action, get the next pack ids and add it to context
-            ids = request.GET.get("_bulkreview_next") or "__last"
-            extra_context = {"bulk_pack_ids": ids}
+            extra_context = {
+                "bulk_pack_ids": request.GET.get("_bulkreview_next") or LAST_PACK
+            }
 
         return admin.ModelAdmin.changeform_view(
             self,
