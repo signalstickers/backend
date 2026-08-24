@@ -4,7 +4,6 @@ import random
 import re
 
 from core.models import ApiKey, BotPreventionQuestion, ContributionRequest
-from core.notifications import NotificationPriority, notify
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
@@ -78,36 +77,6 @@ Comment:
         email.send()
     except Exception as ex:  # pylint: disable=broad-except
         logger.error("Error sending e-mail: %s", ex)
-
-
-def notify_pack_escalated(pack, username):
-    """
-    Send a HIGH-priority ntfy notification when a pack is escalated.
-    """
-    logger.info("Pack %s (%s) escalated", pack.title, pack.pack_id)
-    notify(
-        "signalstickers-admin",
-        "Escalated pack",
-        f"Pack '{pack.title}' escalated by {username}, please review",
-        priority=NotificationPriority.HIGH,
-        tags=["arrow_heading_up"],
-        click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
-    )
-
-
-def notify_admin_login(username, client_ip):
-    """
-    Send a ntfy notification when an admin user logs into the admin panel.
-    """
-    logger.info("Admin login: %s from %s", username, client_ip)
-    notify(
-        "signalstickers-admin",
-        "Admin login",
-        f"Admin '{username}' logged in from {client_ip}",
-        priority=NotificationPriority.DEFAULT,
-        tags=["lock"],
-        click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
-    )
 
 
 def new_contribution_request(client_ip):

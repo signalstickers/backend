@@ -91,6 +91,7 @@ class ContributionView(APIView):
                 raise ApiException(str(val_err)) from None
 
             logger.info("Created new pack (from contribution): %s", pack.title)
+
             send_email_on_pack_propose(pack)
             notify(
                 "signalstickers-packs",
@@ -99,6 +100,7 @@ class ContributionView(APIView):
                 priority=NotificationPriority.MIN,
                 click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
             )
+
             return Response({"success": bool(pack)})
 
         except ApiException as api_err:

@@ -130,7 +130,6 @@ No DRF auth classes or JWT. Two mechanisms:
 - `clear_contribution_requests()` — delete expired CRs (>2h)
 - `invalidate_cdn()` — POST to Cloudflare purge_cache API
 - `send_email_on_pack_propose(pack)` — email users in group `email_notification_on_propose`
-- `notify_pack_escalated(pack)` — fire-and-forget HIGH ntfy notification when a pack is escalated (called from `PackAdmin` on the IN_REVIEW→ESCALATED transition)
 
 ## Utilities (`core/utils.py`)
 
@@ -150,11 +149,12 @@ Custom `CustomAdmin` site (`core/adminsite.py`) with extra views:
 
 - `admin/trigger_actions/` — POST `action=cloudflareclear` to invalidate Cloudflare CDN (requires `core.invalidate_cloudflare` perm)
 - `admin/stats/` — analytics dashboard: visits by month, most popular packs, most-viewed all-time (requires `core.view_stats_page`)
+- Successful admin login fires `notify()` (ntfy to `signalstickers-admin`)
 
 `PackAdmin` is the main moderation UI with:
 
 - Bulk review session workflow (approve/refuse/escalate + "continue to next pack")
-- Escalating a pack fires `notify_pack_escalated()` (immediate HIGH ntfy), only on the transition to ESCALATED
+- Escalating a pack fires `notify()` directly (immediate HIGH ntfy), only on the transition to ESCALATED
 - AI-review hint fields
 - Read-only computed fields
 - Non-superusers cannot edit `pack_id`/`pack_key`

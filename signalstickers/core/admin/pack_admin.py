@@ -1,7 +1,9 @@
+import logging
 from urllib.parse import parse_qsl, urlencode
 
 from core.models import Pack, PackStatus
-from core.services import notify_pack_escalated
+from core.notifications import NotificationPriority, notify
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.options import HttpResponseRedirect, csrf_protect_m
 from django.shortcuts import redirect
@@ -9,6 +11,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+
+logger = logging.getLogger("main")
 
 
 @admin.register(Pack)
@@ -201,8 +205,15 @@ class PackAdmin(admin.ModelAdmin):
                 "_escalate" in request.POST
                 and previous_status != PackStatus.ESCALATED.name
             ):
-                notify_pack_escalated(
-                    Pack.objects.get(pk=object_id), request.user.username
+                pack_obj = Pack.objects.get(pk=object_id)
+                logger.info("Pack %s (%s) escalated", pack_obj.title, pack_obj.pack_id)
+                notify(
+                    "signalstickers-admin",
+                    "Escalated pack",
+                    f"Pack '{pack_obj.title}' escalated by {request.user.username}, please review",
+                    priority=NotificationPriority.HIGH,
+                    tags=["arrow_heading_up"],
+                    click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
                 )
 
             # Once the pack is saved and status changed to approved
@@ -234,7 +245,19 @@ class PackAdmin(admin.ModelAdmin):
                 "_escalate_continue" in request.POST
                 and prev_pack_obj.status != PackStatus.ESCALATED.name
             ):
-                notify_pack_escalated(prev_pack_obj, request.user.username)
+                logger.info(
+                    "Pack %s (%s) escalated",
+                    prev_pack_obj.title,
+                    prev_pack_obj.pack_id,
+                )
+                notify(
+                    "signalstickers-admin",
+                    "Escalated pack",
+                    f"Pack '{prev_pack_obj.title}' escalated by {request.user.username}, please review",
+                    priority=NotificationPriority.HIGH,
+                    tags=["arrow_heading_up"],
+                    click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
+                )
 
             # Redirect to the next pack
             next_ids = request.POST.get("_bulkreview_next") or "__last"

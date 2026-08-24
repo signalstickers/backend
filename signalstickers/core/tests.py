@@ -17,7 +17,6 @@ from core.notifications import (
     _send,
     notify,
 )
-from core.services import notify_admin_login, notify_pack_escalated
 from core.utils import get_current_ym_date, get_last_month_ym_date
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -711,41 +710,6 @@ class AIReviewTestCase(TestCase):
         self.assertEqual(AIReview.objects.count(), 0)
 
 
-class NotifyPackEscalatedTestCase(TestCase):
-    def test_notify_pack_escalated(self):
-        pack = Pack.objects.create(
-            pack_id="4830e258138fca961ab2151d9596755c",
-            pack_key="87078ee421bad8bf44092ca72166b67ae5397e943452e4300ced9367b7f6a1a1",
-            title="Escalated pack",
-            author="Foo",
-            status=PackStatus.ESCALATED.name,
-        )
-        with patch("core.services.notify") as n:
-            notify_pack_escalated(pack, "admin")
-            n.assert_called_once()
-            args, kwargs = n.call_args
-            self.assertEqual(args[0], "signalstickers-admin")
-            self.assertEqual(args[1], "Escalated pack")
-            self.assertEqual(
-                args[2], "Pack 'Escalated pack' escalated by admin, please review"
-            )
-            self.assertEqual(kwargs["priority"], NotificationPriority.HIGH)
-            self.assertEqual(kwargs["tags"], ["arrow_heading_up"])
-
-
-class NotifyAdminLoginTestCase(TestCase):
-    def test_notify_admin_login(self):
-        with patch("core.services.notify") as n:
-            notify_admin_login("admin", "127.0.0.1")
-            n.assert_called_once()
-            args, kwargs = n.call_args
-            self.assertEqual(args[0], "signalstickers-admin")
-            self.assertEqual(args[1], "Admin login")
-            self.assertEqual(args[2], "Admin 'admin' logged in from 127.0.0.1")
-            self.assertEqual(kwargs["priority"], NotificationPriority.DEFAULT)
-            self.assertEqual(kwargs["tags"], ["lock"])
-
-
 class AdminLoginTestCase(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_superuser(
@@ -753,16 +717,22 @@ class AdminLoginTestCase(TestCase):
         )
 
     def test_successful_login_notifies(self):
-        with patch("core.adminsite.notify_admin_login") as n:
+        with patch("core.adminsite.notify") as n:
             response = self.client.post(
                 "/admin/login/",
                 {"username": "admin", "password": "pass"},
             )
         self.assertEqual(response.status_code, 302)
-        n.assert_called_once_with("admin", "127.0.0.1")
+        n.assert_called_once()
+        args, kwargs = n.call_args
+        self.assertEqual(args[0], "signalstickers-admin")
+        self.assertEqual(args[1], "Admin login")
+        self.assertEqual(args[2], "Admin 'admin' logged in from 127.0.0.1")
+        self.assertEqual(kwargs["priority"], NotificationPriority.DEFAULT)
+        self.assertEqual(kwargs["tags"], ["lock"])
 
     def test_failed_login_does_not_notify(self):
-        with patch("core.adminsite.notify_admin_login") as n:
+        with patch("core.adminsite.notify") as n:
             response = self.client.post(
                 "/admin/login/",
                 {"username": "admin", "password": "wrong"},
@@ -771,7 +741,7 @@ class AdminLoginTestCase(TestCase):
         n.assert_not_called()
 
     def test_get_login_does_not_notify(self):
-        with patch("core.adminsite.notify_admin_login") as n:
+        with patch("core.adminsite.notify") as n:
             response = self.client.get("/admin/login/")
         self.assertEqual(response.status_code, 200)
         n.assert_not_called()
@@ -792,7 +762,7 @@ class EscalationAdminTestCase(TestCase):
         )
 
     def _escalate(self, button, **extra):
-        with patch("core.admin.pack_admin.notify_pack_escalated") as n:
+        with patch("core.admin.pack_admin.notify") as n:
             response = self.client.post(
                 reverse("admin:core_pack_change", args=[self.pack.pk]),
                 {
