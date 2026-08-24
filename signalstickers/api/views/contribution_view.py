@@ -96,7 +96,7 @@ class ContributionView(APIView):
                 "signalstickers-packs",
                 "New pack proposed",
                 f"New pack proposed: {pack.title} by {pack.author}",
-                priority=NotificationPriority.LOW,
+                priority=NotificationPriority.MIN,
                 click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
             )
             return Response({"success": bool(pack)})
