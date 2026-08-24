@@ -27,7 +27,7 @@ class Notification(BaseModel):
     message: str
     tags: list[str] = Field(default_factory=list)
     priority: NotificationPriority = NotificationPriority.DEFAULT
-    click_url: AnyUrl
+    click_url: AnyUrl | None = None
 
 
 def _send(n: Notification) -> None:
