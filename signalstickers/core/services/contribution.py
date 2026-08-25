@@ -1,6 +1,5 @@
 import datetime
 import logging
-import random
 import re
 
 from core.models import BotPreventionQuestion, ContributionRequest
@@ -11,12 +10,17 @@ logger = logging.getLogger("main")
 
 
 def new_contribution_request(client_ip):
-    cont_req = ContributionRequest(
-        client_ip=client_ip,
-        question=random.choice(BotPreventionQuestion.objects.all()),  # nosec
-    )
+    question = BotPreventionQuestion.objects.order_by("?").first()
+    if question is None:
+        raise RuntimeError("No BotPreventionQuestion available to assign")
+
+    cont_req = ContributionRequest(client_ip=client_ip, question=question)
     cont_req.save()
     return cont_req
+
+
+def _normalize_answer(value):
+    return re.sub(r"[^a-z0-9]", "", value.strip().lower())
 
 
 def check_contribution_request(contribution_id, client_answer, client_ip):
@@ -37,8 +41,8 @@ def check_contribution_request(contribution_id, client_answer, client_ip):
             " Reason: you took too long",
         )
 
-    correct_answer = re.sub(r"[^a-z0-9]", "", cont_req.question.answer.strip().lower())
-    client_answer = re.sub(r"[^a-z0-9]", "", client_answer.strip().lower())
+    correct_answer = _normalize_answer(cont_req.question.answer)
+    client_answer = _normalize_answer(client_answer)
 
     if correct_answer == client_answer:
         cont_req.delete()
