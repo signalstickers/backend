@@ -8,6 +8,7 @@ from core.services import (
     check_contribution_request,
     send_email_on_pack_propose,
 )
+from core.utils import admin_url
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from rest_framework import parsers, status
@@ -21,6 +22,25 @@ class ApiException(Exception):
     def __init__(self, message, stat=status.HTTP_400_BAD_REQUEST):
         super().__init__(message)
         self.status = stat
+
+
+def format_proposal_errors(errors) -> list[str]:
+    errs_list = []
+    for err_cat, err_list in errors.items():
+        if err_cat == "contribution_answer":
+            err_list.append("Please answer the question.")
+            continue
+        if err_cat == "contribution_id":
+            errs_list.append("Invalid contribution request. Try again.")
+            continue
+        for err in err_list.values():
+            if err[0].startswith("pack with this pack id already exists"):
+                errs_list.append(
+                    "This pack already exists, or has already been proposed (and is waiting for its approval)."
+                )
+            else:
+                errs_list.append(err[0])
+    return errs_list
 
 
 class ContributionView(APIView):
@@ -42,28 +62,12 @@ class ContributionView(APIView):
                 req_srl = APIPackRequestSerializer(data=request.data)
 
             else:
+                api_via = ""
                 req_srl = PackRequestSerializer(data=request.data)
 
             # Validate the received data
             if not req_srl.is_valid():
-
-                errs_list = []
-                for err_cat, err_list in req_srl.errors.items():
-                    if err_cat == "contribution_answer":
-                        err_list.append("Please answer the question.")
-                        continue
-                    if err_cat == "contribution_id":
-                        errs_list.append("Invalid contribution request. Try again.")
-                        continue
-                    for err in err_list.values():
-                        if err[0].startswith("pack with this pack id already exists"):
-                            errs_list.append(
-                                "This pack already exists, or has already been proposed (and is waiting for its approval)."
-                            )
-                        else:
-                            errs_list.append(err[0])
-
-                raise ApiException(", ".join(errs_list))
+                raise ApiException(", ".join(format_proposal_errors(req_srl.errors)))
 
             if not api_key:
                 # Check contribution request
@@ -75,8 +79,6 @@ class ContributionView(APIView):
                 if not is_cont_req_valid:
                     raise ApiException(str(cont_req_errors))
 
-                api_via = ""
-
             # Create pack in review
             try:
                 pack = Pack.objects.new(
@@ -85,7 +87,7 @@ class ContributionView(APIView):
                     submitter_comments=req_srl.validated_data.get(
                         "submitter_comments", ""
                     ),
-                    api_via=api_via,  # pylint: disable=possibly-used-before-assignment
+                    api_via=api_via,
                 )
             except ValidationError as val_err:
                 raise ApiException(str(val_err)) from None
@@ -98,7 +100,7 @@ class ContributionView(APIView):
                 "New pack proposed",
                 f"New pack proposed: {pack.title} by {pack.author}",
                 priority=NotificationPriority.MIN,
-                click_url=f"https://{settings.ALLOWED_HOSTS[0]}/{settings.ADMIN_URL}",
+                click_url=admin_url(),
             )
 
             return Response({"success": bool(pack)})

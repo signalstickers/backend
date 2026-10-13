@@ -32,27 +32,24 @@ class AdminAction(models.Model):
 
     @staticmethod
     def caches_dirty():
-        try:
-            last_cleared_date = (
-                LogEntry.objects.filter(
-                    action_flag=LOG_CLEAR_CACHES,
-                    change_message__icontains='"success":true',
-                )
-                .order_by("action_time")
-                .last()
-                .action_time
+        last_cleared = (
+            LogEntry.objects.filter(
+                action_flag=LOG_CLEAR_CACHES,
+                change_message__icontains='"success":true',
             )
+            .order_by("action_time")
+            .last()
+        )
 
-            last_modification = (
-                LogEntry.objects.filter(
-                    Q(content_type=ContentType.objects.get_for_model(Pack).pk)
-                    | Q(content_type=ContentType.objects.get_for_model(Tag).pk)
-                )
-                .order_by("action_time")
-                .last()
-                .action_time
+        last_modification = (
+            LogEntry.objects.filter(
+                Q(content_type=ContentType.objects.get_for_model(Pack).pk)
+                | Q(content_type=ContentType.objects.get_for_model(Tag).pk)
             )
+            .order_by("action_time")
+            .last()
+        )
 
-            return last_modification > last_cleared_date
-        except AttributeError:
+        if last_cleared is None or last_modification is None:
             return None
+        return last_modification.action_time > last_cleared.action_time

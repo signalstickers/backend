@@ -7,7 +7,7 @@ from django.db import models
 class ReportManager(models.Manager):
 
     def to_process(self):
-        return Report.objects.filter(status="TO_PROCESS")
+        return Report.objects.filter(status=ReportStatus.TO_PROCESS.name)
 
     def to_process_count(self):
         return Report.objects.to_process().count()

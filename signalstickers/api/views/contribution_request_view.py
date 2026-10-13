@@ -7,5 +7,8 @@ from rest_framework.views import APIView
 
 class ContributionRequestView(APIView):
     def post(self, request):
+        """
+        Create a new bot-prevention challenge for the client's IP
+        """
         cont_req = new_contribution_request(request.META.get(settings.HEADER_IP))
         return Response(ContributionRequestSerializer(cont_req).data)
