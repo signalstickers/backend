@@ -134,7 +134,8 @@
 }
 
 #save_approve_btn,
-#approve_continue_btn {
+#approve_continue_btn,
+#agree_btn {
     background-color: forestgreen;
 }
 
@@ -143,7 +144,8 @@
 }
 
 #refuse_continue_btn,
-#refuse_approve_btn {
+#refuse_approve_btn,
+#disagree_btn {
     background-color: var(--delete-button-bg);
 }
 

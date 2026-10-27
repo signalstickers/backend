@@ -21,4 +21,9 @@
     {% endif %}
 {% endif %}
 
+{% if original.get_model_name == 'report' %}
+    <input type="submit" value="Agree" name="_agree" id="agree_btn">
+    <input type="submit" value="Disagree" name="_disagree" id="disagree_btn">
+{% endif %}
+
 {% endblock %}

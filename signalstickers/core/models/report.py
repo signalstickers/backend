@@ -36,3 +36,6 @@ class Report(models.Model):
 
     def __str__(self):
         return str(self.date)
+
+    def get_model_name(self):
+        return self._meta.model_name
