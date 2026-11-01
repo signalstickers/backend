@@ -10,7 +10,7 @@ router = Router()
 
 
 @router.post(
-    "/",
+    "",
     response={
         HTTPStatus.NO_CONTENT: None,
         HTTPStatus.BAD_REQUEST: APIErrorResponse,

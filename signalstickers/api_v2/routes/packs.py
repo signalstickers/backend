@@ -27,7 +27,7 @@ router = Router()
 
 
 @router.get(
-    "/",
+    "",
     response={
         HTTPStatus.OK: list[PackResponse],
     },
@@ -51,7 +51,7 @@ def get_all_packs(request, limit: int | None = Query(None, ge=1)):
 
 
 @router.post(
-    "/",
+    "",
     response={
         HTTPStatus.NO_CONTENT: None,
         HTTPStatus.BAD_REQUEST: APIErrorResponse,

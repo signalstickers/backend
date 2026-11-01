@@ -22,7 +22,7 @@ def _check_ai_auth(request) -> bool:
 
 
 @router.get(
-    "/toreview/",
+    "/toreview",
     response={
         HTTPStatus.OK: list[InReviewPackResponse],
         HTTPStatus.UNAUTHORIZED: APIErrorResponse,
@@ -48,7 +48,7 @@ def get_in_review_packs(request, only_noaireview: bool = False):
 
 
 @router.put(
-    "/aireview/",
+    "/aireview",
     response={
         HTTPStatus.NO_CONTENT: None,
         HTTPStatus.UNAUTHORIZED: APIErrorResponse,

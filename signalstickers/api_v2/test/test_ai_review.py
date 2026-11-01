@@ -24,7 +24,7 @@ class AIReviewAPITestCase(TestCase):
             **kwargs,
         )
 
-    # ---------- GET /v2/admin/toreview/ ----------
+    # ---------- GET /v2/admin/toreview ----------
 
     def test_get_in_review_packs(self, mocked_getpacklib):
         self._create_pack(
@@ -199,7 +199,7 @@ class AIReviewAPITestCase(TestCase):
         self.assertEqual(HTTPStatus.OK, response.status_code)
         self.assertEqual(response.json(), [])
 
-    # ---------- PUT /v2/admin/aireview/ ----------
+    # ---------- PUT /v2/admin/aireview ----------
 
     def test_ai_review_creation(self, mocked_getpacklib):
         pack = self._create_pack(

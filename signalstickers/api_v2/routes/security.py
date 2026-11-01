@@ -8,7 +8,7 @@ router = Router()
 
 
 @router.post(
-    "/",
+    "",
     response={
         200: SecurityQuestionResponse,
     },
