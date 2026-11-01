@@ -3,6 +3,9 @@
 This documents presents the `signalstickers.org'` public API, that must be used
 by third-parties projects to interact with `signalstickers.org`.
 
+Note: this document describes API v1, which remains the documented third-party
+contract; the internal API v2 is described in [api_v2.md](api_v2.md).
+
 ## Prerequisites
 
 - A token, delivered by signalstickers' admins.

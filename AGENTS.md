@@ -27,8 +27,8 @@ Backend for signalstickers.org: a moderation tool where third parties propose Si
 ## Architecture
 
 - **`core/`** — all domain models, admin, services, management commands. `api/` migrations are state-only relocations; Django state lives in `core`.
-- **`api/`** — API v1 (DRF), mounted at `/v1/`.
-- **`api_v2/`** — half-baked, not ready. **Do not touch it.**
+- **`api/`** — API v1 (DRF), mounted at `/v1/`. Deprecated, will be deleted at a later date.
+- **`api_v2/`** — API v2 (django-ninja), mounted at `/v2/`. The default API.
 - **`signalstickers/signalstickers/`** — project package (settings, urls). `manage.py` selects settings via `ENV_TYPE` (`prod` → `settings.prod`, else `settings.dev`).
 - No Celery/Redis/task queue. Periodic jobs are management commands driven by cron.
 

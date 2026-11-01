@@ -10,11 +10,13 @@ from core.models import (
     Pack,
     PackStatus,
 )
+from core.notifications import NotificationPriority
 from core.services import (
     check_api_key,
     clear_contribution_requests,
     new_contribution_request,
 )
+from core.utils import admin_url
 from django.test import TestCase
 from django.urls import reverse
 
@@ -77,24 +79,25 @@ class ContributionTestCase(TestCase):
 
         contrib_req = new_contribution_request("10.0.0.42")
 
-        response = self.client.put(
-            reverse("api_v2:contribute"),
-            {
-                "pack": {
-                    "id": "a" * 32,
-                    "key": "b" * 64,
-                    "source": "source.example.com",
-                    "tags": ["Foo", "Bar", "Foobar"],
-                    "nsfw": True,
-                    "original": False,
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:contribute"),
+                {
+                    "pack": {
+                        "id": "a" * 32,
+                        "key": "b" * 64,
+                        "source": "source.example.com",
+                        "tags": ["Foo", "Bar", "Foobar"],
+                        "nsfw": True,
+                        "original": False,
+                    },
+                    "security_id": contrib_req.id,
+                    "security_answer": contrib_req.question.answer,
+                    "submitter_comments": "Thanks",
                 },
-                "security_id": contrib_req.id,
-                "security_answer": contrib_req.question.answer,
-                "submitter_comments": "Thanks",
-            },
-            content_type="application/json",
-            REMOTE_ADDR="10.0.0.42",
-        )
+                content_type="application/json",
+                REMOTE_ADDR="10.0.0.42",
+            )
 
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertEqual(b"", response.content)
@@ -116,6 +119,117 @@ class ContributionTestCase(TestCase):
             sorted([str(t) for t in pack.tags.all()]), sorted(["foo", "bar", "foobar"])
         )
         self.assertEqual(pack.submitter_comments, "Thanks")
+
+        mocked_notify.assert_called_once_with(
+            "signalstickers-packs",
+            "New pack proposed",
+            "New pack proposed: Pack title by Pack author",
+            priority=NotificationPriority.MIN,
+            click_url=admin_url(),
+        )
+
+    def test_propose_pack_without_submitter_comments(self, mocked_getpacklib):
+        """
+        Valid Pack request without submitter_comments (optional field)
+        """
+
+        mocked_getpacklib.return_value = TestPack("Pack title", "Pack author", b"\x00")
+
+        contrib_req = new_contribution_request("10.0.0.42")
+
+        response = self.client.post(
+            reverse("api_v2:contribute"),
+            {
+                "pack": {
+                    "id": "a" * 32,
+                    "key": "b" * 64,
+                    "source": "source.example.com",
+                    "tags": ["Foo", "Bar", "Foobar"],
+                    "nsfw": True,
+                    "original": False,
+                },
+                "security_id": contrib_req.id,
+                "security_answer": contrib_req.question.answer,
+            },
+            content_type="application/json",
+            REMOTE_ADDR="10.0.0.42",
+        )
+
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
+        self.assertEqual(b"", response.content)
+        self.assertEqual(1, len(Pack.objects.all()))
+
+        pack = Pack.objects.get()
+        self.assertEqual(pack.submitter_comments, "")
+
+    def test_propose_pack_not_on_signal(self, mocked_getpacklib):
+        """
+        Pack not found on Signal: generic pack_invalid error (frozen contract)
+        """
+        mocked_getpacklib.return_value = None
+
+        contrib_req = new_contribution_request("10.0.0.42")
+
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:contribute"),
+                {
+                    "pack": {
+                        "id": "a" * 32,
+                        "key": "b" * 64,
+                        "source": "source.example.com",
+                        "tags": ["Foo", "Bar", "Foobar"],
+                        "nsfw": True,
+                        "original": False,
+                    },
+                    "security_id": contrib_req.id,
+                    "security_answer": contrib_req.question.answer,
+                    "submitter_comments": "Thanks",
+                },
+                content_type="application/json",
+                REMOTE_ADDR="10.0.0.42",
+            )
+
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+        self.assertEqual(
+            response.json(),
+            {
+                "detail": [
+                    {
+                        "type": "pack_invalid",
+                        "loc": [],
+                        "msg": "An error happened.",
+                    }
+                ]
+            },
+        )
+        self.assertEqual(Pack.objects.count(), 0)
+        mocked_notify.assert_not_called()
+
+    def test_public_contribute_not_implemented(self, _):
+        """
+        Third-party contribution is intentionally not available in API v2
+        """
+        response = self.client.put(
+            reverse("api_v2:public_contribute"),
+            {},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, HTTPStatus.NOT_IMPLEMENTED)
+        self.assertEqual(
+            response.json(),
+            {
+                "detail": [
+                    {
+                        "type": "not_implemented",
+                        "loc": [],
+                        "msg": "Third-party contribution is not available in API v2. "
+                        "Use API v1.",
+                    }
+                ]
+            },
+        )
 
     def test_propose_pack_duplicate(self, mocked_getpacklib):
         """
@@ -140,7 +254,7 @@ class ContributionTestCase(TestCase):
 
         # Invalid contribution (duplicate pack)
         contrib_req = new_contribution_request("10.0.0.42")
-        response = self.client.put(
+        response = self.client.post(
             reverse("api_v2:contribute"),
             {
                 "pack": {
@@ -162,7 +276,14 @@ class ContributionTestCase(TestCase):
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
         self.assertEqual(
             {
-                "detail": "This pack already exists, or has already been proposed (and is waiting for its approval)"
+                "detail": [
+                    {
+                        "type": "duplicate_pack",
+                        "loc": ["body", "data", "pack", "id"],
+                        "msg": "This pack already exists, or has already been proposed "
+                        "(and is waiting for its approval)",
+                    }
+                ]
             },
             response.json(),
         )
@@ -175,7 +296,7 @@ class ContributionTestCase(TestCase):
         """
         mocked_getpacklib.return_value = TestPack("foo", "bar", b"\x00")
 
-        response = self.client.put(
+        response = self.client.post(
             reverse("api_v2:contribute"),
             {
                 "pack": {
@@ -196,7 +317,15 @@ class ContributionTestCase(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertEqual(
             response.json(),
-            {"detail": "Security verification failed, reload and try again"},
+            {
+                "detail": [
+                    {
+                        "type": "security_verification_failed",
+                        "loc": ["body", "data", "security_id"],
+                        "msg": "Security verification failed, reload and try again",
+                    }
+                ]
+            },
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
@@ -211,7 +340,7 @@ class ContributionTestCase(TestCase):
         contrib_req.request_date = "2019-12-21 13:47Z"
         contrib_req.save()
 
-        response = self.client.put(
+        response = self.client.post(
             reverse("api_v2:contribute"),
             {
                 "pack": {
@@ -233,8 +362,14 @@ class ContributionTestCase(TestCase):
         self.assertEqual(
             response.json(),
             {
-                "detail": "Security verification failed, reload and try again."
-                " Reason: you took too long"
+                "detail": [
+                    {
+                        "type": "security_verification_failed",
+                        "loc": ["body", "data", "security_id"],
+                        "msg": "Security verification failed, reload and try again."
+                        " Reason: you took too long",
+                    }
+                ]
             },
         )
         self.assertEqual(list(Pack.objects.all()), [])
@@ -248,27 +383,40 @@ class ContributionTestCase(TestCase):
         contrib_req = new_contribution_request("127.0.0.1")
         contrib_req.save()
 
-        response = self.client.put(
-            reverse("api_v2:contribute"),
-            {
-                "pack": {
-                    "id": "a" * 32,
-                    "key": "b" * 64,
-                    "source": "signalstickers.com",
-                    "tags": ["Foo", "Bar", "Foobar"],
-                    "nsfw": True,
-                    "original": False,
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:contribute"),
+                {
+                    "pack": {
+                        "id": "a" * 32,
+                        "key": "b" * 64,
+                        "source": "signalstickers.com",
+                        "tags": ["Foo", "Bar", "Foobar"],
+                        "nsfw": True,
+                        "original": False,
+                    },
+                    "security_id": contrib_req.id,
+                    "security_answer": "WRONG ANSWER",
+                    "submitter_comments": "Thanks",
                 },
-                "security_id": contrib_req.id,
-                "security_answer": "WRONG ANSWER",
-                "submitter_comments": "Thanks",
-            },
-            content_type="application/json",
-        )
+                content_type="application/json",
+            )
 
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
-        self.assertEqual(response.json(), {"detail": "Wrong answer"})
+        self.assertEqual(
+            response.json(),
+            {
+                "detail": [
+                    {
+                        "type": "wrong_answer",
+                        "loc": ["body", "data", "security_answer"],
+                        "msg": "Wrong answer",
+                    }
+                ]
+            },
+        )
         self.assertEqual(list(Pack.objects.all()), [])
+        mocked_notify.assert_not_called()
 
     def test_propose_pack_bad_ip_contributionrequest(self, mocked_getpacklib):
         """
@@ -280,7 +428,7 @@ class ContributionTestCase(TestCase):
 
         contrib_req = new_contribution_request("10.0.13.37")
 
-        response = self.client.put(
+        response = self.client.post(
             reverse("api_v2:contribute"),
             {
                 "pack": {
@@ -302,7 +450,15 @@ class ContributionTestCase(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
         self.assertEqual(
             response.json(),
-            {"detail": "Security verification failed, reload and try again"},
+            {
+                "detail": [
+                    {
+                        "type": "security_verification_failed",
+                        "loc": ["body", "data", "security_id"],
+                        "msg": "Security verification failed, reload and try again",
+                    }
+                ]
+            },
         )
         self.assertEqual(list(Pack.objects.all()), [])
 
@@ -314,7 +470,7 @@ class ContributionTestCase(TestCase):
             "Pack title 1", "Pack author 1", b"\x00"
         )
 
-        response = self.client.put(
+        response = self.client.post(
             reverse("api_v2:contribute"),
             {
                 "pack": {

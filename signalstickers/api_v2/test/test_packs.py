@@ -13,9 +13,10 @@ logging.disable(logging.CRITICAL)
 
 @patch("core.models.pack.get_pack_from_signal", autospec=True)
 class PackTestCase(TestCase):
-    def test_get_all_packs(self, mocked_getpacklib):
+    def _create_online_packs(self, mocked_getpacklib):
         """
-        Test for the API path that returns all the ONLINE packs
+        Create 3 ONLINE packs (returned most recent first: e, c, a) and
+        1 IN_REVIEW pack (not returned by the API).
         """
 
         # First pack, status ONLINE: should be returned last by the API
@@ -72,6 +73,13 @@ class PackTestCase(TestCase):
         Pack.objects.new(
             pack_id="g" * 32, pack_key="h" * 64, status=PackStatus.IN_REVIEW.name
         )
+
+    def test_get_all_packs(self, mocked_getpacklib):
+        """
+        Test for the API path that returns all the ONLINE packs
+        """
+        self._create_online_packs(mocked_getpacklib)
+
         response = self.client.get(reverse("api_v2:get_all_packs"))
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -117,6 +125,53 @@ class PackTestCase(TestCase):
                     },
                 },
             ],
+        )
+
+    def test_get_all_packs_with_limit(self, mocked_getpacklib):
+        """
+        ?limit=64 returns only the first 64 packs (most recent first)
+        """
+        mocked_getpacklib.return_value = TestPack("Pack title", "Pack author", b"\x00")
+        for i in range(65):
+            Pack.objects.new(
+                pack_id=format(i, "x").rjust(32, "0"),
+                pack_key=format(i, "x").rjust(64, "0"),
+                status=PackStatus.ONLINE.name,
+            )
+
+        response = self.client.get(reverse("api_v2:get_all_packs"), {"limit": 64})
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(len(response.json()), 64)
+        # The oldest pack (lowest id) is not returned
+        self.assertNotIn("0" * 32, [pack["meta"]["id"] for pack in response.json()])
+
+    def test_get_all_packs_limit_too_small(self, _):
+        """
+        ?limit=0 is invalid (must be >= 1)
+        """
+        response = self.client.get(reverse("api_v2:get_all_packs"), {"limit": 0})
+
+        self.assertEqual(response.status_code, HTTPStatus.UNPROCESSABLE_ENTITY)
+
+    def test_get_all_packs_limit_not_64(self, _):
+        """
+        ?limit=2 is invalid (only 64 is allowed)
+        """
+        response = self.client.get(reverse("api_v2:get_all_packs"), {"limit": 2})
+
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+        self.assertEqual(
+            response.json(),
+            {
+                "detail": [
+                    {
+                        "type": "invalid_limit",
+                        "loc": [],
+                        "msg": "Unauthorized limit",
+                    }
+                ]
+            },
         )
 
     def test_pack_cleanup(self, mocked_getpacklib):

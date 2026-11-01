@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from api_v2.schemas import AnalyticsRequest
-from api_v2.schemas.errors import APIErrorResponse
+from api_v2.schemas.errors import APIError, APIErrorResponse
 from core.models import Pack, SiteStat
 from core.utils import get_current_ym_date
 from ninja import Form, Router
@@ -40,4 +40,9 @@ def send_analytics(request, data: Form[AnalyticsRequest]):
         pack.save()
         return HTTPStatus.NO_CONTENT, None
     except Pack.DoesNotExist:
-        return HTTPStatus.BAD_REQUEST, APIErrorResponse(detail="Unknown pack")
+        raise APIError(
+            400,
+            "unknown_pack",
+            "Unknown pack",
+            loc=["form", "data", "target"],
+        ) from None

@@ -1,5 +1,6 @@
+from api_v2.schemas.aireview import AIReviewRequest, InReviewPackResponse
 from api_v2.schemas.analytics import AnalyticsRequest
-from api_v2.schemas.contribution import APIContributionRequest, ContributionRequest
+from api_v2.schemas.contribution import ContributionRequest
 from api_v2.schemas.errors import APIErrorResponse
 from api_v2.schemas.pack import (
     PackIdentifierRequest,

@@ -44,6 +44,43 @@ class StatusAPITestCase(TestCase):
             },
         )
 
+    def test_status_escalated_shows_in_review(self, mocked_getpacklib):
+        """
+        An escalated pack is still in the review process, from the
+        submitter's point of view: it is reported as IN_REVIEW.
+        """
+        mocked_getpacklib.return_value = TestPack(
+            "Pack title 1", "Pack author 1", b"\x00"
+        )
+        Pack.objects.new(
+            pack_id="a" * 32,
+            pack_key="b" * 64,
+            status=PackStatus.ESCALATED.name,
+            source="Source 1",
+            nsfw=True,
+            original=False,
+            submitter_comments="",
+            tags=["Foo1", "BAR1", "FooBar1"],
+            api_via="TestClient 1",
+        )
+
+        response = self.client.get(
+            reverse("api_v2:get_pack_status"),
+            {"id": "a" * 32, "key": "b" * 64},
+            content_type="application/json",
+        )
+
+        self.assertEqual(HTTPStatus.OK, response.status_code)
+        self.assertEqual(
+            response.json(),
+            {
+                "pack_title": "Pack title 1",
+                "pack_id": "a" * 32,
+                "status": PackStatus.IN_REVIEW.name,
+                "status_comments": None,
+            },
+        )
+
     def test_status_pack_noexists(self, mocked_getpacklib):
         mocked_getpacklib.return_value = TestPack(
             "Pack title 1", "Pack author 1", b"\x00"
@@ -70,8 +107,14 @@ class StatusAPITestCase(TestCase):
         self.assertEqual(
             response.json(),
             {
-                "detail": "Unknown pack. Check that the signal.art URL is correct, "
-                "and that you submitted your pack on signalstickers.org."
+                "detail": [
+                    {
+                        "type": "unknown_pack",
+                        "loc": ["query", "id"],
+                        "msg": "Unknown pack. Check that the signal.art URL is correct, "
+                        "and that you submitted your pack on signalstickers.org.",
+                    }
+                ]
             },
         )
 

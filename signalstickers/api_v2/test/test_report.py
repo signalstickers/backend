@@ -2,7 +2,9 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 from core.models import BotPreventionQuestion, Pack, PackStatus, Report, ReportStatus
+from core.notifications import NotificationPriority
 from core.services import new_contribution_request
+from core.utils import admin_url
 from django.test import TestCase
 from django.urls import reverse
 
@@ -34,17 +36,18 @@ class ReportAPITestCase(TestCase):
             api_via="TestClient 1",
         )
 
-        response = self.client.post(
-            reverse("api_v2:report"),
-            {
-                "pack_id": "a" * 32,
-                "content": "foo" * 20,
-                "security_id": contrib_req.id,
-                "security_answer": contrib_req.question.answer,
-            },
-            content_type="application/json",
-            REMOTE_ADDR="10.0.0.42",
-        )
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:report"),
+                {
+                    "pack_id": "a" * 32,
+                    "content": "foo" * 20,
+                    "security_id": contrib_req.id,
+                    "security_answer": contrib_req.question.answer,
+                },
+                content_type="application/json",
+                REMOTE_ADDR="10.0.0.42",
+            )
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_code)
         self.assertEqual(b"", response.content)
 
@@ -53,6 +56,14 @@ class ReportAPITestCase(TestCase):
         self.assertEqual(report.pack.pack_id, "a" * 32)
         self.assertEqual(report.content, "foo" * 20)
         self.assertEqual(report.status, ReportStatus.TO_PROCESS.name)
+
+        mocked_notify.assert_called_once_with(
+            "signalstickers-packs",
+            "Pack reported",
+            "Pack reported: Pack title 1",
+            priority=NotificationPriority.HIGH,
+            click_url=admin_url(),
+        )
 
     def test_report_pack_noexists(self, mocked_getpacklib):
         mocked_getpacklib.return_value = TestPack(
@@ -73,21 +84,34 @@ class ReportAPITestCase(TestCase):
             api_via="TestClient 1",
         )
 
-        response = self.client.post(
-            reverse("api_v2:report"),
-            {
-                "pack_id": "b" * 32,
-                "content": "foo" * 20,
-                "security_id": contrib_req.id,
-                "security_answer": contrib_req.question.answer,
-            },
-            content_type="application/json",
-            REMOTE_ADDR="10.0.0.42",
-        )
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:report"),
+                {
+                    "pack_id": "b" * 32,
+                    "content": "foo" * 20,
+                    "security_id": contrib_req.id,
+                    "security_answer": contrib_req.question.answer,
+                },
+                content_type="application/json",
+                REMOTE_ADDR="10.0.0.42",
+            )
         self.assertEqual(HTTPStatus.NOT_FOUND, response.status_code)
-        self.assertEqual({"detail": "Unknown pack"}, response.json())
+        self.assertEqual(
+            {
+                "detail": [
+                    {
+                        "type": "unknown_pack",
+                        "loc": ["body", "data", "pack_id"],
+                        "msg": "Unknown pack",
+                    }
+                ]
+            },
+            response.json(),
+        )
 
         self.assertEqual(0, len(Report.objects.all()))
+        mocked_notify.assert_not_called()
 
     def test_report_pack_invalid_contributionrequest(self, mocked_getpacklib):
         mocked_getpacklib.return_value = TestPack(
@@ -108,24 +132,34 @@ class ReportAPITestCase(TestCase):
             api_via="TestClient 1",
         )
 
-        response = self.client.post(
-            reverse("api_v2:report"),
-            {
-                "pack_id": "a" * 32,
-                "content": "foo" * 20,
-                "security_id": "00000000-0000-4000-a000-000000000000",  # invalid
-                "security_answer": contrib_req.question.answer,
-            },
-            content_type="application/json",
-            REMOTE_ADDR="10.0.0.42",
-        )
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:report"),
+                {
+                    "pack_id": "a" * 32,
+                    "content": "foo" * 20,
+                    "security_id": "00000000-0000-4000-a000-000000000000",  # invalid
+                    "security_answer": contrib_req.question.answer,
+                },
+                content_type="application/json",
+                REMOTE_ADDR="10.0.0.42",
+            )
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
         self.assertEqual(
-            {"detail": "Security verification failed, reload and try again"},
+            {
+                "detail": [
+                    {
+                        "type": "security_verification_failed",
+                        "loc": ["body", "data", "security_id"],
+                        "msg": "Security verification failed, reload and try again",
+                    }
+                ]
+            },
             response.json(),
         )
 
         self.assertEqual(0, len(Report.objects.all()))
+        mocked_notify.assert_not_called()
 
     def test_report_pack_invalid_wrong_answer(self, mocked_getpacklib):
         mocked_getpacklib.return_value = TestPack(
@@ -146,18 +180,31 @@ class ReportAPITestCase(TestCase):
             api_via="TestClient 1",
         )
 
-        response = self.client.post(
-            reverse("api_v2:report"),
-            {
-                "pack_id": "a" * 32,
-                "content": "foo" * 20,
-                "security_id": contrib_req.id,
-                "security_answer": "WRONG ANSWER",
-            },
-            content_type="application/json",
-            REMOTE_ADDR="10.0.0.42",
-        )
+        with patch("api_v2.routes.packs.notify") as mocked_notify:
+            response = self.client.post(
+                reverse("api_v2:report"),
+                {
+                    "pack_id": "a" * 32,
+                    "content": "foo" * 20,
+                    "security_id": contrib_req.id,
+                    "security_answer": "WRONG ANSWER",
+                },
+                content_type="application/json",
+                REMOTE_ADDR="10.0.0.42",
+            )
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
-        self.assertEqual({"detail": "Wrong answer"}, response.json())
+        self.assertEqual(
+            {
+                "detail": [
+                    {
+                        "type": "wrong_answer",
+                        "loc": ["body", "data", "security_answer"],
+                        "msg": "Wrong answer",
+                    }
+                ]
+            },
+            response.json(),
+        )
 
         self.assertEqual(0, len(Report.objects.all()))
+        mocked_notify.assert_not_called()

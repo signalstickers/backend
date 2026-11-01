@@ -2,6 +2,7 @@
 
 source =
     api/
+    api_v2/
     core/
 
 branch = True

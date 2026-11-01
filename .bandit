@@ -1,3 +1,3 @@
 [bandit]
 skips = B110
-exclude = signalstickers/api/tests,signalstickers/settings/dev.py,signalstickers/core/tests
+exclude = signalstickers/api/tests,signalstickers/api_v2/test,signalstickers/settings/dev.py,signalstickers/core/tests

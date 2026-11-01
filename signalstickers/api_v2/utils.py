@@ -1,8 +1,8 @@
-from http import HTTPStatus
-
-from api_v2.schemas.errors import InvalidSecurityErrorResponse
+from api_v2.schemas.errors import APIError
 from core.services import check_contribution_request
 from pydantic import IPvAnyAddress
+
+WRONG_ANSWER = "Wrong answer"
 
 
 def validate_securityanswer_or_die(
@@ -14,7 +14,16 @@ def validate_securityanswer_or_die(
         client_ip,
     )
     if not is_cont_req_valid:
-        raise InvalidSecurityErrorResponse(
-            HTTPStatus.BAD_REQUEST,
+        if sec_quest_invalid_reason == WRONG_ANSWER:
+            raise APIError(
+                400,
+                "wrong_answer",
+                WRONG_ANSWER,
+                loc=["body", "data", "security_answer"],
+            )
+        raise APIError(
+            400,
+            "security_verification_failed",
             sec_quest_invalid_reason,
+            loc=["body", "data", "security_id"],
         )

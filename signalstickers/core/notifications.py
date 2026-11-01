@@ -38,7 +38,7 @@ def _send(n: Notification) -> None:
     topic = n.topic
     if settings.DEBUG:
         message = f"{n.message} \n\n[Redirected for debug. Original topic: {topic}]"
-        topic = "signalsticker-debug"
+        topic = "signalstickers-debug"
 
     url = f"{settings.NTFY_SERVER_URL.rstrip('/')}/{topic}"
     headers = {"Priority": n.priority.value, "X-Title": n.title}

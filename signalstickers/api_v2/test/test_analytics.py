@@ -120,7 +120,18 @@ class PingTestCase(TestCase):
             content_type="application/x-www-form-urlencoded",
         )
         self.assertEqual(HTTPStatus.BAD_REQUEST, response.status_code)
-        self.assertEqual({"detail": "Unknown pack"}, response.json())
+        self.assertEqual(
+            {
+                "detail": [
+                    {
+                        "type": "unknown_pack",
+                        "loc": ["form", "data", "target"],
+                        "msg": "Unknown pack",
+                    }
+                ]
+            },
+            response.json(),
+        )
 
         pack.refresh_from_db()
 
