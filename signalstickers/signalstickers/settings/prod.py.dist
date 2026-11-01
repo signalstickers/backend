@@ -6,15 +6,6 @@ CHANGE ALL VALUES IN THIS FILE.
 from signalstickers.settings.common import *
 
 
-# Obtained from https://developer.twitter.com/
-TWITTER_CONF = {
-    "consumer_key": "FIXME",
-    "consumer_secret": "FIXME",
-    "access_token": "FIXME",
-    "access_token_secret": "FIXME",
-}
-
-
 CLOUDFLARE_CONF = {
     "zone_id": "FIXME",
     "token": "FIXME",
