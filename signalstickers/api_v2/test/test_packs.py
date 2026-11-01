@@ -129,20 +129,20 @@ class PackTestCase(TestCase):
 
     def test_get_all_packs_with_limit(self, mocked_getpacklib):
         """
-        ?limit=64 returns only the first 64 packs (most recent first)
+        ?limit=128 returns only the first 128 packs (most recent first)
         """
         mocked_getpacklib.return_value = TestPack("Pack title", "Pack author", b"\x00")
-        for i in range(65):
+        for i in range(129):
             Pack.objects.new(
                 pack_id=format(i, "x").rjust(32, "0"),
                 pack_key=format(i, "x").rjust(64, "0"),
                 status=PackStatus.ONLINE.name,
             )
 
-        response = self.client.get(reverse("api_v2:get_all_packs"), {"limit": 64})
+        response = self.client.get(reverse("api_v2:get_all_packs"), {"limit": 128})
 
         self.assertEqual(response.status_code, HTTPStatus.OK)
-        self.assertEqual(len(response.json()), 64)
+        self.assertEqual(len(response.json()), 128)
         # The oldest pack (lowest id) is not returned
         self.assertNotIn("0" * 32, [pack["meta"]["id"] for pack in response.json()])
 

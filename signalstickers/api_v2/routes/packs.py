@@ -44,7 +44,7 @@ def get_all_packs(request, limit: int | None = Query(None, ge=1)):
     """
     packs = Pack.objects.onlines()
     if limit is not None:
-        if limit != 64:
+        if limit != 128:
             raise APIError(400, "invalid_limit", "Unauthorized limit")
         packs = packs[:limit]
     return packs
